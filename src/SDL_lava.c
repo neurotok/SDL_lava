@@ -430,23 +430,25 @@ void VK_CreateRenderPass(VK_Context *ctx){
 	assert(vkCreateRenderPass(ctx->device, &render_pass_info, NULL, &ctx->render_pass) == VK_SUCCESS);
 }
 
-void VK_CreateDescriptionSetLayout(VK_Context *ctx){
+VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32_t count, VkDescriptorType type, VkShaderStageFlags flag){
 
-	VkDescriptorSetLayoutBinding ubo_bindig;
-	ubo_bindig.binding = 0;
-	ubo_bindig.descriptorCount = 1;
-	ubo_bindig.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	ubo_bindig.pImmutableSamplers = NULL;
-	ubo_bindig.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	VkDescriptorSetLayoutBinding bindings_description;
+	bindings_description.binding = binding;
+	bindings_description.descriptorCount = count;
+	bindings_description.descriptorType = type;
+	bindings_description.pImmutableSamplers = NULL;
+	bindings_description.stageFlags = flag;
 
-	VkDescriptorSetLayoutBinding sampler_bindig;
-	sampler_bindig.binding = 1;
-	sampler_bindig.descriptorCount = 1;
-	sampler_bindig.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	sampler_bindig.pImmutableSamplers = NULL;
-	sampler_bindig.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;	
+	return bindings_description;
+}
 
-	VkDescriptorSetLayoutBinding description_set_bindigns[] = {ubo_bindig, sampler_bindig};
+
+void VK_CreateDescriptionSetLayout(VK_Context *ctx){ // uint32_t count, VkDescriptorSetLayoutBinding *bindings_description){
+
+	VkDescriptorSetLayoutBinding description_set_bindigns[2];// = {ubo_bindig, sampler_bindig};
+
+	description_set_bindigns[0] = VK_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	description_set_bindigns[1] = VK_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 
 	VkDescriptorSetLayoutCreateInfo descriptor_layout_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
 	descriptor_layout_info.bindingCount = NUM(description_set_bindigns);
@@ -491,7 +493,7 @@ VkShaderModule VK_CreateShaderModule(VkDevice device, char *filename){
 	return shader_module;
 }
 
-VkVertexInputAttributeDescription VK_CreateShaderDescription(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset){
+VkVertexInputAttributeDescription VK_CreateShaderDescriptor(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset){
 
 	VkVertexInputAttributeDescription attribute = {0};
 	attribute.binding = binding;
@@ -526,8 +528,8 @@ void VK_CreateGraphicsPipeline(VK_Context *ctx){
 	bindings_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 	VkVertexInputAttributeDescription attribute_description[2];// = {position_attribute_description, textcoord_attribute_description};
-	attribute_description[0] = VK_CreateShaderDescription(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0);
-	attribute_description[1] = VK_CreateShaderDescription(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float));
+	attribute_description[0] = VK_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0);
+	attribute_description[1] = VK_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float));
 
 
 	VkPipelineVertexInputStateCreateInfo vertex_input_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};

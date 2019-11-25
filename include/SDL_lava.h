@@ -11,11 +11,11 @@
 #include "HandmadeMath.h"
 
 typedef enum{
-	VK_CONTEXT_DEBUG = 1,
-	VK_CONTEXT_DOUBLEBUF = 2,
-	VK_CONTEXT_MIPMAPS = 4,
-	VK_CONTEXT_MULTISAMPLING = 8,
-}VK_ContextMask;
+	VK_RENDERER_DEBUG = 1,
+	VK_RENDERER_DOUBLEBUF = 2,
+	VK_RENDERER_MIPMAPS = 4,
+	VK_RENDERER_MULTISAMPLING = 8,
+}VK_RendererMask;
 
 typedef struct{
 	float position[3];
@@ -93,15 +93,15 @@ typedef struct{
 	VkSemaphore render_finished_semaphore[2];
 	VkFence in_flight_fence[2];
 
-}VK_Context;
+}VK_Renderer;
 
-VK_Context* VK_CreateContext(SDL_Window* window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], VK_ContextMask context_mask);
-void VK_DestroyContext(VK_Context *ctx);
+VK_Renderer* VK_CreateRenderer(SDL_Window* window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], VK_RendererMask context_mask);
+void VK_DestroyRenderer(VK_Renderer *renderer);
 
-void VK_CreateImage(VK_Context *ctx, VkImage *image, VkDeviceMemory *data,  uint32_t width, uint32_t height, uint32_t mip_levels, VkSampleCountFlagBits sample_count, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
-VkImageView VK_CreateImageView(VK_Context *ctx, VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, uint32_t mip_levels, bool swizzle);
-VkCommandBuffer VK_BeginSingleTimeCommands(VK_Context *ctx);
-void VK_EndSingleTimeCommands(VK_Context *ctx, VkCommandBuffer *command_buffer);
+void VK_CreateImage(VK_Renderer *renderer, VkImage *image, VkDeviceMemory *data,  uint32_t width, uint32_t height, uint32_t mip_levels, VkSampleCountFlagBits sample_count, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+VkImageView VK_CreateImageView(VK_Renderer *renderer, VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, uint32_t mip_levels, bool swizzle);
+VkCommandBuffer VK_BeginSingleTimeCommands(VK_Renderer *renderer);
+void VK_EndSingleTimeCommands(VK_Renderer *renderer, VkCommandBuffer *command_buffer);
 
-void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window);
+void VK_RecreateSwapchain(VK_Renderer *renderer, SDL_Window *window);
 

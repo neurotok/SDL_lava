@@ -16,11 +16,11 @@
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
 
-void VK_TransitionImageLayout(VK_Context *ctx, VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_levels);
-void VK_CopyBufferToImage(VK_Context *ctx, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-void VK_GenerateMipmaps(VK_Context *ctx, VkImage image, VkFormat format, uint32_t width, uint32_t height, uint32_t mip_levels);
+void VK_TransitionImageLayout(VK_Renderer *renderer, VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_levels);
+void VK_CopyBufferToImage(VK_Renderer *renderer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+void VK_GenerateMipmaps(VK_Renderer *renderer, VkImage image, VkFormat format, uint32_t width, uint32_t height, uint32_t mip_levels);
 
-void VK_CreateTextureImage(VK_Context *ctx, const char *file){
+void VK_CreateTextureImage(VK_Renderer *renderer, const char *file){
 
 	int texture_width, texture_height, texture_channels;
 	stbi_uc *pixels = stbi_load(file, &texture_width, &texture_height, &texture_channels, STBI_rgb_alpha);
@@ -28,8 +28,8 @@ void VK_CreateTextureImage(VK_Context *ctx, const char *file){
 
 	uint32_t mip_levels = floor(log2(texture_width > texture_height ? texture_width : texture_height)) + 1;
 
-	if (ctx->mips_max_level < mip_levels) {
-		ctx->mips_max_level = (float)mip_levels;
+	if (renderer->mips_max_level < mip_levels) {
+		renderer->mips_max_level = (float)mip_levels;
 	}
 
 	VkDeviceSize texture_size = texture_width * texture_height * 4; //4 bytex per pixel
@@ -37,59 +37,59 @@ void VK_CreateTextureImage(VK_Context *ctx, const char *file){
 	VkBuffer staging_buffer;
 	VkDeviceMemory staging_buffer_allocation;
 
-	VK_CreateBuffer(ctx,
+	VK_CreateBuffer(renderer,
 			&staging_buffer, &staging_buffer_allocation,
 			texture_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 	void* temp_data;
-	vkMapMemory(ctx->device, staging_buffer_allocation, 0, texture_size, 0, &temp_data);
+	vkMapMemory(renderer->device, staging_buffer_allocation, 0, texture_size, 0, &temp_data);
 	memcpy(temp_data, pixels, texture_size);
-	vkUnmapMemory(ctx->device, staging_buffer_allocation);
+	vkUnmapMemory(renderer->device, staging_buffer_allocation);
 
 	stbi_image_free(pixels);
 
-	VK_CreateImage(ctx,
-			&ctx->texture_image, &ctx->texture_image_allocation,
+	VK_CreateImage(renderer,
+			&renderer->texture_image, &renderer->texture_image_allocation,
 			texture_width, texture_height,
 			mip_levels, VK_SAMPLE_COUNT_1_BIT, 
-			ctx->swapchain_image_format, 
+			renderer->swapchain_image_format, 
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	VK_TransitionImageLayout(ctx,
-			ctx->texture_image,
-			ctx->swapchain_image_format,
+	VK_TransitionImageLayout(renderer,
+			renderer->texture_image,
+			renderer->swapchain_image_format,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			mip_levels);
 
-	VK_CopyBufferToImage(ctx, staging_buffer, ctx->texture_image, texture_width, texture_height);
+	VK_CopyBufferToImage(renderer, staging_buffer, renderer->texture_image, texture_width, texture_height);
 	//TODO
 	/*
-	VK_TransitionImageLayout(ctx,
-			ctx->texture_image,
-			ctx->swapchain_image_format,
+	VK_TransitionImageLayout(renderer,
+			renderer->texture_image,
+			renderer->swapchain_image_format,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			mip_levels);
 	*/
 
-	vkDestroyBuffer(ctx->device, staging_buffer, NULL);
-	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);
+	vkDestroyBuffer(renderer->device, staging_buffer, NULL);
+	vkFreeMemory(renderer->device, staging_buffer_allocation, NULL);
 
-	VK_GenerateMipmaps(ctx,
-			ctx->texture_image,
-			ctx->swapchain_image_format,
+	VK_GenerateMipmaps(renderer,
+			renderer->texture_image,
+			renderer->swapchain_image_format,
 			texture_width, texture_height,
 			mip_levels);
 }
 
-void VK_TransitionImageLayout(VK_Context *ctx, VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_levels){
+void VK_TransitionImageLayout(VK_Renderer *renderer, VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_levels){
 
-	VkCommandBuffer texture_upload = VK_BeginSingleTimeCommands(ctx);
+	VkCommandBuffer texture_upload = VK_BeginSingleTimeCommands(renderer);
 
 	VkImageMemoryBarrier image_mem_barrier = {.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
 	image_mem_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -130,11 +130,11 @@ void VK_TransitionImageLayout(VK_Context *ctx, VkImage image, VkFormat format, V
 			0, NULL,
 			1, &image_mem_barrier);
 
-	VK_EndSingleTimeCommands(ctx, &texture_upload);
+	VK_EndSingleTimeCommands(renderer, &texture_upload);
 }
-void VK_CopyBufferToImage(VK_Context *ctx, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height){
+void VK_CopyBufferToImage(VK_Renderer *renderer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height){
 
-	VkCommandBuffer coppy_image = VK_BeginSingleTimeCommands(ctx);
+	VkCommandBuffer coppy_image = VK_BeginSingleTimeCommands(renderer);
 
 	VkBufferImageCopy region = {0};
 	region.bufferOffset = 0;
@@ -150,12 +150,12 @@ void VK_CopyBufferToImage(VK_Context *ctx, VkBuffer buffer, VkImage image, uint3
 
 	vkCmdCopyBufferToImage(coppy_image, buffer, image,  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-	VK_EndSingleTimeCommands(ctx, &coppy_image);
+	VK_EndSingleTimeCommands(renderer, &coppy_image);
 }
 
-void VK_GenerateMipmaps(VK_Context *ctx, VkImage image, VkFormat format, uint32_t width, uint32_t height, uint32_t mip_levels){
+void VK_GenerateMipmaps(VK_Renderer *renderer, VkImage image, VkFormat format, uint32_t width, uint32_t height, uint32_t mip_levels){
 
-	VkCommandBuffer mips_generation = VK_BeginSingleTimeCommands(ctx);
+	VkCommandBuffer mips_generation = VK_BeginSingleTimeCommands(renderer);
 
 	VkImageMemoryBarrier mips_mem_barrier = {.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
 	mips_mem_barrier.image = image;
@@ -245,17 +245,17 @@ void VK_GenerateMipmaps(VK_Context *ctx, VkImage image, VkFormat format, uint32_
 			0, NULL,
 			1, &mips_mem_barrier);
 
-	VK_EndSingleTimeCommands(ctx, &mips_generation);
+	VK_EndSingleTimeCommands(renderer, &mips_generation);
 }
 
-void VK_CreateTextureImageView(VK_Context *ctx){
-	ctx->texture_image_view = VK_CreateImageView(ctx,
-			ctx->texture_image, ctx->swapchain_image_format,
+void VK_CreateTextureImageView(VK_Renderer *renderer){
+	renderer->texture_image_view = VK_CreateImageView(renderer,
+			renderer->texture_image, renderer->swapchain_image_format,
 			VK_IMAGE_ASPECT_COLOR_BIT, 1,
 			true);
 }
 
-void VK_CreateTextureSampler(VK_Context *ctx){
+void VK_CreateTextureSampler(VK_Renderer *renderer){
 
 	VkSamplerCreateInfo sampler_info = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
 	sampler_info.magFilter = VK_FILTER_LINEAR;
@@ -271,10 +271,10 @@ void VK_CreateTextureSampler(VK_Context *ctx){
 	sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
 	sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	sampler_info.minLod = 0.0f;
-	sampler_info.maxLod = ctx->gen_mips ? ctx->mips_max_level : 0.0f;
+	sampler_info.maxLod = renderer->gen_mips ? renderer->mips_max_level : 0.0f;
 	sampler_info.mipLodBias = 0.0f;
 
-	assert(vkCreateSampler(ctx->device, &sampler_info, NULL, &ctx->texture_sampler) == VK_SUCCESS);
+	assert(vkCreateSampler(renderer->device, &sampler_info, NULL, &renderer->texture_sampler) == VK_SUCCESS);
 }
 
 void VK_ParseOBJ(const char *path, mesh_t *mesh){
@@ -467,17 +467,17 @@ void VK_DestroyMesh(mesh_t *mesh){
 }
 
 
-void VK_LoadModel(VK_Context *ctx, const char* path)
+void VK_LoadModel(VK_Renderer *renderer, const char* path)
 {
 	if (strstr(path, ".obj")){
 		mesh_t model;
 		model.vertices = NULL;
 		model.indices = NULL;
 		VK_ParseOBJ(path, &model);
-		VK_CreateVertexBuffer(ctx, &model);
-		VK_CreateIndexBuffer(ctx, &model);
+		VK_CreateVertexBuffer(renderer, &model);
+		VK_CreateIndexBuffer(renderer, &model);
 		//TODO
-		ctx->vertices = model.vertices_size / sizeof(vertex_t);
+		renderer->vertices = model.vertices_size / sizeof(vertex_t);
 		//printf("%f %f %f\n", model.vertices[0].position[0],  model.vertices[0].position[1], model.vertices[0].position[2]);
 		VK_DestroyMesh(&model);
 	};
@@ -487,8 +487,8 @@ void VK_LoadModel(VK_Context *ctx, const char* path)
 		model.vertices = NULL;
 		model.indices = NULL;
 		VK_ParseGLTF(path, &model);
-		VK_CreateVertexBuffer(ctx, &model);
-		VK_CreateIndexBuffer(ctx, &model);
+		VK_CreateVertexBuffer(renderer, &model);
+		VK_CreateIndexBuffer(renderer, &model);
 		//printf("%f %f %f\n", model.vertices[0].position[0],  model.vertices[0].position[1], model.vertices[0].position[2]);
 		VK_DestroyMesh(&model);
 	};

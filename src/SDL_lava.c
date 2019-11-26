@@ -22,6 +22,7 @@ void VK_GetSampleCount(VK_Renderer *renderer);
 void VK_GetDepthFormat(VK_Renderer *renderer);
 void VK_CreateRenderPass(VK_Renderer *renderer);
 void VK_CreateDescriptionSetLayout(VK_Renderer *renderer);
+void VK_CreatePipelineLayout(VK_Renderer *renderer);
 void VK_CreateGraphicsPipeline(VK_Renderer *renderer);
 void VK_CreateCommandPool(VK_Renderer *renderer);
 void VK_CreateColorResource(VK_Renderer *renderer);
@@ -69,6 +70,8 @@ VK_Renderer* VK_CreateRenderer(SDL_Window *window, const char *window_title, uin
 	VK_CreateRenderPass(renderer);
 
 	VK_CreateDescriptionSetLayout(renderer);
+	VK_CreatePipelineLayout(renderer);
+
 	VK_CreateGraphicsPipeline(renderer);
 	VK_CreateCommandPool(renderer);
 	VK_CreateColorResource(renderer);
@@ -443,8 +446,6 @@ VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32
 	return bindings_description;
 }
 
-
-
  //VkDescriptorSetLayout* VK_CreateDescriptionSetLayout(VK_Renderer *renderer, uint32_t count, VkDescriptorSetLayoutBinding *bindings_description){
 void VK_CreateDescriptionSetLayout(VK_Renderer *renderer){
 
@@ -460,7 +461,17 @@ void VK_CreateDescriptionSetLayout(VK_Renderer *renderer){
 	assert(vkCreateDescriptorSetLayout(renderer->device, &descriptor_layout_info, NULL, &renderer->descriptor_layout) == VK_SUCCESS);
 
 	//return descriptor_layout;
+}
 
+void VK_CreatePipelineLayout(VK_Renderer *renderer){
+
+	VkPipelineLayoutCreateInfo pipeline_layout_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+	pipeline_layout_info.setLayoutCount = 1; // Optional
+	pipeline_layout_info.pSetLayouts = &renderer->descriptor_layout; // Optional
+	pipeline_layout_info.pushConstantRangeCount = 0; // Optional
+	pipeline_layout_info.pPushConstantRanges = NULL; // Optional
+
+	assert(vkCreatePipelineLayout(renderer->device, &pipeline_layout_info, NULL, &renderer->pipeline_layout) == VK_SUCCESS);
 }
 
 VkShaderModule VK_CreateShaderModule(VkDevice device, char *filename){
@@ -535,7 +546,6 @@ void VK_CreateGraphicsPipeline(VK_Renderer *renderer){
 	VkVertexInputAttributeDescription attribute_description[2];// = {position_attribute_description, textcoord_attribute_description};
 	attribute_description[0] = VK_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0);
 	attribute_description[1] = VK_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float));
-
 
 	VkPipelineVertexInputStateCreateInfo vertex_input_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
 	vertex_input_info.vertexBindingDescriptionCount = 1;
@@ -618,14 +628,6 @@ void VK_CreateGraphicsPipeline(VK_Renderer *renderer){
 	color_blend_info.blendConstants[1] = 0.0f; // Optional
 	color_blend_info.blendConstants[2] = 0.0f; // Optional
 	color_blend_info.blendConstants[3] = 0.0f; // Optional
-
-	VkPipelineLayoutCreateInfo pipeline_layout_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
-	pipeline_layout_info.setLayoutCount = 1; // Optional
-	pipeline_layout_info.pSetLayouts = &renderer->descriptor_layout; // Optional
-	pipeline_layout_info.pushConstantRangeCount = 0; // Optional
-	pipeline_layout_info.pPushConstantRanges = NULL; // Optional
-
-	assert(vkCreatePipelineLayout(renderer->device, &pipeline_layout_info, NULL, &renderer->pipeline_layout) == VK_SUCCESS);
 
 	VkGraphicsPipelineCreateInfo pipeline_info = {.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
 	pipeline_info.stageCount = 2;

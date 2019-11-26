@@ -48,26 +48,7 @@ int main(void){
 	
 
 
-	//VkDescriptorSetLayout descriptor_layout* = VK_Descriptor
-
-
-
-	/*
-	lav_attr_t atributes[] = 
-	*/
-	/*
-	lav_shader_d flat_textured = {0};
-	flat_textured.vs_source = "./assets/shaders/vert.spv";
-	flat_textured.fs_source = "./assets/shaders/frag.spv";
-
-
-	lav_pipeline pip = VK_CreatePipeline(&pip_description); 
-
-	lav_
-
-
-	*/
-
+	
 	float rotation_angle = 0.0f;	
 	float rotation_speed = 20.0f;
 	uint32_t prev_time = SDL_GetTicks();

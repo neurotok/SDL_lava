@@ -21,8 +21,15 @@ void VK_CreateSwapchainImageViews(VK_Renderer *renderer);
 void VK_GetSampleCount(VK_Renderer *renderer);
 void VK_GetDepthFormat(VK_Renderer *renderer);
 void VK_CreateRenderPass(VK_Renderer *renderer);
-void VK_CreateDescriptionSetLayout(VK_Renderer *renderer);
-void VK_CreatePipelineLayout(VK_Renderer *renderer);
+//void VK_CreateDescriptionSetLayout(VK_Renderer *renderer);
+//void VK_CreatePipelineLayout(VK_Renderer *renderer);
+
+VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32_t count, VkDescriptorType type, VkShaderStageFlags flag);
+
+VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Renderer *renderer, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]);
+
+VkPipelineLayout VK_CreatePipelineLayout(VK_Renderer *renderer, VkDescriptorSetLayout *descriptor_layout);
+
 void VK_CreateGraphicsPipeline(VK_Renderer *renderer);
 void VK_CreateCommandPool(VK_Renderer *renderer);
 void VK_CreateColorResource(VK_Renderer *renderer);
@@ -49,8 +56,10 @@ VK_Renderer* VK_CreateRenderer(SDL_Window *window, const char *window_title, uin
 	renderer->swapchain_color_space = VK_NULL_HANDLE;
 	renderer->depth_image_format = VK_NULL_HANDLE;
 	renderer->render_pass = VK_NULL_HANDLE;
+
 	renderer->descriptor_layout = VK_NULL_HANDLE;
 	renderer->pipeline_layout = VK_NULL_HANDLE;
+
 	renderer->graphics_pipeline = VK_NULL_HANDLE;
 	renderer->command_pool = VK_NULL_HANDLE;
 	renderer->mips_max_level = 0.0;
@@ -69,8 +78,13 @@ VK_Renderer* VK_CreateRenderer(SDL_Window *window, const char *window_title, uin
 	VK_GetSampleCount(renderer);
 	VK_CreateRenderPass(renderer);
 
-	VK_CreateDescriptionSetLayout(renderer);
-	VK_CreatePipelineLayout(renderer);
+	VkDescriptorSetLayoutBinding description_set_bindigns[] = { // = {ubo_bindig, sampler_bindig};
+		VK_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT),
+		VK_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+	};
+
+	renderer->descriptor_layout =  VK_CreateDescriptionSetLayout(renderer, NUM(description_set_bindigns), description_set_bindigns);
+	renderer->pipeline_layout = VK_CreatePipelineLayout(renderer, &renderer->descriptor_layout);
 
 	VK_CreateGraphicsPipeline(renderer);
 	VK_CreateCommandPool(renderer);
@@ -446,32 +460,31 @@ VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32
 	return bindings_description;
 }
 
- //VkDescriptorSetLayout* VK_CreateDescriptionSetLayout(VK_Renderer *renderer, uint32_t count, VkDescriptorSetLayoutBinding *bindings_description){
-void VK_CreateDescriptionSetLayout(VK_Renderer *renderer){
-
-	VkDescriptorSetLayoutBinding description_set_bindigns[2];// = {ubo_bindig, sampler_bindig};
-
-	description_set_bindigns[0] = VK_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-	description_set_bindigns[1] = VK_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Renderer *renderer, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]){
+	VkDescriptorSetLayout bindings;
 
 	VkDescriptorSetLayoutCreateInfo descriptor_layout_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-	descriptor_layout_info.bindingCount = NUM(description_set_bindigns);
-	descriptor_layout_info.pBindings = description_set_bindigns;
+	descriptor_layout_info.bindingCount = count;
+	descriptor_layout_info.pBindings = bindings_description;
 
-	assert(vkCreateDescriptorSetLayout(renderer->device, &descriptor_layout_info, NULL, &renderer->descriptor_layout) == VK_SUCCESS);
+	assert(vkCreateDescriptorSetLayout(renderer->device, &descriptor_layout_info, NULL, &bindings) == VK_SUCCESS);
 
-	//return descriptor_layout;
+	return bindings;
 }
 
-void VK_CreatePipelineLayout(VK_Renderer *renderer){
+VkPipelineLayout VK_CreatePipelineLayout(VK_Renderer *renderer, VkDescriptorSetLayout *descriptor_layout){
+
+	VkPipelineLayout layout;
 
 	VkPipelineLayoutCreateInfo pipeline_layout_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
 	pipeline_layout_info.setLayoutCount = 1; // Optional
-	pipeline_layout_info.pSetLayouts = &renderer->descriptor_layout; // Optional
+	pipeline_layout_info.pSetLayouts = descriptor_layout; // Optional
 	pipeline_layout_info.pushConstantRangeCount = 0; // Optional
 	pipeline_layout_info.pPushConstantRanges = NULL; // Optional
 
-	assert(vkCreatePipelineLayout(renderer->device, &pipeline_layout_info, NULL, &renderer->pipeline_layout) == VK_SUCCESS);
+	assert(vkCreatePipelineLayout(renderer->device, &pipeline_layout_info, NULL, &layout) == VK_SUCCESS);
+
+	return layout;
 }
 
 VkShaderModule VK_CreateShaderModule(VkDevice device, char *filename){
@@ -543,9 +556,10 @@ void VK_CreateGraphicsPipeline(VK_Renderer *renderer){
 	bindings_description.stride = 5 * sizeof(float);
 	bindings_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	VkVertexInputAttributeDescription attribute_description[2];// = {position_attribute_description, textcoord_attribute_description};
-	attribute_description[0] = VK_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0);
-	attribute_description[1] = VK_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float));
+	VkVertexInputAttributeDescription attribute_description[] = {// = {position_attribute_description, textcoord_attribute_description};
+		VK_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
+		VK_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
+	};
 
 	VkPipelineVertexInputStateCreateInfo vertex_input_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
 	vertex_input_info.vertexBindingDescriptionCount = 1;

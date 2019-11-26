@@ -54,8 +54,10 @@ typedef struct{
 	VkFormat depth_image_format;
 	VkSampleCountFlagBits sample_count;
 	VkRenderPass render_pass;
+
 	VkDescriptorSetLayout descriptor_layout;
 	VkPipelineLayout pipeline_layout;
+
 	VkPipeline graphics_pipeline;
 	VkCommandPool command_pool;
 	VkImage color_image;

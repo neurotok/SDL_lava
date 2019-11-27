@@ -98,17 +98,7 @@ int main(void){
 			}
 		}
 
-		vkWaitForFences(ctx->device, 1, &ctx->in_flight_fence[current_frame], VK_TRUE, UINT64_MAX);
-
-		uint32_t image_index;
-		VkResult result = vkAcquireNextImageKHR(ctx->device, ctx->swapchain, UINT64_MAX, ctx->image_available_semaphore[current_frame], VK_NULL_HANDLE, &image_index);
-
-		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			VK_RecreateSwapchain(ctx, window);
-			goto REDRAW;
-		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-			printf("failed to acquire swap chain image!\n");
-		}
+		//Update bindings
 		ubo_t mvp;
 		mvp.model = HMM_Mat4d(1.0f);
 		rotation_angle -= rotation_speed * (float)elapsed_time / 1000.0f;
@@ -133,6 +123,19 @@ int main(void){
 		memcpy(temp_data, &mvp, sizeof(ubo_t));
 		vkUnmapMemory(ctx->device, ctx->uniform_buffer_allocation[current_frame]);
 
+
+		vkWaitForFences(ctx->device, 1, &ctx->in_flight_fence[current_frame], VK_TRUE, UINT64_MAX);
+
+		uint32_t image_index;
+		VkResult result = vkAcquireNextImageKHR(ctx->device, ctx->swapchain, UINT64_MAX, ctx->image_available_semaphore[current_frame], VK_NULL_HANDLE, &image_index);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			VK_RecreateSwapchain(ctx, window);
+			goto REDRAW;
+		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			printf("failed to acquire swap chain image!\n");
+		}
+	
 		VkSubmitInfo submit_info = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO};
 		submit_info.waitSemaphoreCount = 1;
 		submit_info.pWaitSemaphores = &ctx->image_available_semaphore[current_frame]; // wait_semaphores,

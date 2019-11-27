@@ -67,6 +67,7 @@ VK_Renderer* VK_CreateRenderer(SDL_Window *window, const char *window_title, uin
 	renderer->gen_mips = true;
 	renderer->descriptor_pool = VK_NULL_HANDLE;
 
+	//VK_CreateRenderer
 	VK_CreateInstance(window, renderer, window_title, instance_layers_count, instance_layers, context_mask);
 	VK_CreateSurface(renderer, window);
 	VK_GetPhisicalDevice(renderer);
@@ -85,12 +86,29 @@ VK_Renderer* VK_CreateRenderer(SDL_Window *window, const char *window_title, uin
 
 	renderer->descriptor_layout =  VK_CreateDescriptionSetLayout(renderer, NUM(description_set_bindigns), description_set_bindigns);
 	renderer->pipeline_layout = VK_CreatePipelineLayout(renderer, &renderer->descriptor_layout);
+	/*
+	const char *shader_sources[] = { "../assets/shaders/vert.spv",  "../assets/shaders/frag.spv"};
 
+	VkVertexInputAttributeDescription attribute_description[] = {// = {position_attribute_description, textcoord_attribute_description};
+		VK_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
+		VK_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
+	};
+
+	renderer->graphics_pipeline = VK_CreateGraphicsPipeline(renderer,
+			&renderer->pipeline_layout,
+			NUM(shader_sources),
+			shader_sources,
+			NUM(attribute_description),
+			attribute_description,
+			0);
+	*/
 	VK_CreateGraphicsPipeline(renderer);
+
 	VK_CreateCommandPool(renderer);
 	VK_CreateColorResource(renderer);
 	VK_CreateDepthResource(renderer);
 	VK_CreateFramebuffers(renderer);
+
 	VK_CreateTextureImage(renderer, "../assets/images/chalet.jpg");
 	//VK_CreateTextureImage(renderer, "../assets/models/DuckCM.png");
 	VK_CreateTextureImageView(renderer);
@@ -98,6 +116,7 @@ VK_Renderer* VK_CreateRenderer(SDL_Window *window, const char *window_title, uin
 	VK_LoadModel(renderer, "../assets/models/chalet.obj");
 	//VK_LoadModel(renderer, "../assets/models/Duck.obj`");
 	VK_CreateUniformBuffer(renderer);
+
 	VK_CreateDescriptionPool(renderer);
 	VK_CreateDescriptorSets(renderer);
 	VK_CreateCommandBuffers(renderer);
@@ -533,15 +552,60 @@ VkVertexInputAttributeDescription VK_CreateShaderDescriptor(uint32_t binding, ui
 	return attribute;
 }
 
+VkVertexInputBindingDescription VK_CreateVertexInputDescriptor(uint32_t binding, uint32_t stride, VkVertexInputRate input_rate){
+
+	VkVertexInputBindingDescription vertex_input = {0};
+	vertex_input.binding = binding;
+	vertex_input.stride = stride;
+	vertex_input.inputRate = input_rate;
+
+	return vertex_input;
+}
+
+
+VkPipelineShaderStageCreateInfo VK_CreateShaderStage(VK_Renderer *renderer, const char *path){
+
+	if (strstr(path, ".vert") || strstr(path, ".vs") || strstr(path, ".vertex")){
+	
+		VkShaderModule vert_shader_module = VK_CreateShaderModule(renderer->device, "../assets/shaders/vert.spv");
+
+		VkPipelineShaderStageCreateInfo vert_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
+		vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+		vert_shader_stage_info.module = vert_shader_module;
+		vert_shader_stage_info.pName = "main";
+
+		return vert_shader_stage_info;
+	};
+
+	if (strstr(path, ".frag") || strstr(path, ".fs") || strstr(path, ".fragment")){
+
+		VkShaderModule frag_shader_module = VK_CreateShaderModule(renderer->device, "../assets/shaders/frag.spv");
+
+		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
+		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		frag_shader_stage_info.module = frag_shader_module;
+		frag_shader_stage_info.pName = "main";
+
+		 return frag_shader_stage_info;
+	};
+
+	printf("Error: could not detect shader type of the file %s, please use:\n .vert, .vertex, .vs file extensions for the vertex shader files\n	.frag, .fragment, .fs file extensions for the fragment shader files\n",	path);
+
+	exit (0);
+
+}
+
 void VK_CreateGraphicsPipeline(VK_Renderer *renderer){
 
+
 	VkShaderModule vert_shader_module = VK_CreateShaderModule(renderer->device, "../assets/shaders/vert.spv");
-	VkShaderModule frag_shader_module = VK_CreateShaderModule(renderer->device, "../assets/shaders/frag.spv");
 
 	VkPipelineShaderStageCreateInfo vert_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
 	vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
 	vert_shader_stage_info.module = vert_shader_module;
 	vert_shader_stage_info.pName = "main";
+
+	VkShaderModule frag_shader_module = VK_CreateShaderModule(renderer->device, "../assets/shaders/frag.spv");
 
 	VkPipelineShaderStageCreateInfo frag_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
 	frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -550,12 +614,8 @@ void VK_CreateGraphicsPipeline(VK_Renderer *renderer){
 
 	VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info, frag_shader_stage_info};
 
-	VkVertexInputBindingDescription bindings_description = {0};
-	bindings_description.binding = 0;
-	//bindings_description.stride = 8 * sizeof(float);
-	bindings_description.stride = 5 * sizeof(float);
-	bindings_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
+	VkVertexInputBindingDescription bindings_description = VK_CreateVertexInputDescriptor(0, 5 * sizeof(float), VK_VERTEX_INPUT_RATE_VERTEX);
+	
 	VkVertexInputAttributeDescription attribute_description[] = {// = {position_attribute_description, textcoord_attribute_description};
 		VK_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
 		VK_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
@@ -915,10 +975,7 @@ void VK_CreateCommandBuffers(VK_Renderer *renderer){
 
 		vkCmdEndRenderPass(renderer->command_buffers[i]);
 		assert(vkEndCommandBuffer(renderer->command_buffers[i]) == VK_SUCCESS);
-
 	}
-
-
 };
 
 void VK_CreateSyncObjects(VK_Renderer *renderer){

@@ -47,7 +47,6 @@ int main(void){
 			VK_RENDERER_DEBUG | VK_RENDERER_MIPMAPS | VK_RENDERER_MULTISAMPLING);
 	
 
-
 	
 	float rotation_angle = 0.0f;	
 	float rotation_speed = 20.0f;

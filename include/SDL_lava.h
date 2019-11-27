@@ -17,6 +17,13 @@ typedef enum{
 	VK_RENDERER_MULTISAMPLING = 8,
 }VK_RendererMask;
 
+typedef enum{
+	VK_PIPELINE_CULLING_CLOCKWISE = 1,
+	VK_PIPELINE_DOUBLEBUF = 2,
+	VK_PIPELINE_MIPMAPS = 4,
+	VK_PIPELINE_MULTISAMPLING = 8,
+}VK_PipelineMask;
+
 typedef struct{
 	float position[3];
 	//float normals[3];

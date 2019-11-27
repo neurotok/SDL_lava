@@ -11,17 +11,17 @@
 #include "HandmadeMath.h"
 
 typedef enum{
-	VK_RENDERER_DEBUG = 1,
-	VK_RENDERER_DOUBLEBUF = 2,
-	VK_RENDERER_MIPMAPS = 4,
-	VK_RENDERER_MULTISAMPLING = 8,
-}VK_RendererMask;
+	VK_CTX_DEBUG = 1,
+	VK_CTX_DOUBLEBUF = 2,
+	VK_CTX_MIPMAPS = 4,
+	VK_CTX_MULTISAMPLING = 8,
+}VK_ContextMask;
 
 typedef enum{
-	VK_PIPELINE_CULLING_CLOCKWISE = 1,
-	VK_PIPELINE_DOUBLEBUF = 2,
-	VK_PIPELINE_MIPMAPS = 4,
-	VK_PIPELINE_MULTISAMPLING = 8,
+	VK_PIP_CULLING_CLOCKWISE = 1,
+	VK_PIP_DOUBLEBUF = 2,
+	VK_PIP_MIPMAPS = 4,
+	VK_PIP_MULTISAMPLING = 8,
 }VK_PipelineMask;
 
 typedef struct{
@@ -44,6 +44,13 @@ typedef struct ubo_t {
 }ubo_t;
 
 typedef struct{
+	VkDescriptorSetLayout descriptor_layout;
+	VkPipelineLayout pipeline_layout;
+	VkPipeline graphics_pipeline;
+}VK_Pipeline;
+
+
+typedef struct{
 	int window_width, window_height;
 	VkInstance instance;
 	VkSurfaceKHR surface;
@@ -62,10 +69,11 @@ typedef struct{
 	VkSampleCountFlagBits sample_count;
 	VkRenderPass render_pass;
 
-	VkDescriptorSetLayout descriptor_layout;
-	VkPipelineLayout pipeline_layout;
+	VK_Pipeline *pip;
+	//VkDescriptorSetLayout descriptor_layout;
+	//VkPipelineLayout pipeline_layout;
+	//VkPipeline graphics_pipeline;
 
-	VkPipeline graphics_pipeline;
 	VkCommandPool command_pool;
 	VkImage color_image;
 	VkImage depth_image;
@@ -102,15 +110,18 @@ typedef struct{
 	VkSemaphore render_finished_semaphore[2];
 	VkFence in_flight_fence[2];
 
-}VK_Renderer;
+}VK_Context;
 
-VK_Renderer* VK_CreateRenderer(SDL_Window* window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], VK_RendererMask context_mask);
-void VK_DestroyRenderer(VK_Renderer *renderer);
 
-void VK_CreateImage(VK_Renderer *renderer, VkImage *image, VkDeviceMemory *data,  uint32_t width, uint32_t height, uint32_t mip_levels, VkSampleCountFlagBits sample_count, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
-VkImageView VK_CreateImageView(VK_Renderer *renderer, VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, uint32_t mip_levels, bool swizzle);
-VkCommandBuffer VK_BeginSingleTimeCommands(VK_Renderer *renderer);
-void VK_EndSingleTimeCommands(VK_Renderer *renderer, VkCommandBuffer *command_buffer);
 
-void VK_RecreateSwapchain(VK_Renderer *renderer, SDL_Window *window);
+
+VK_Context* VK_CreateContext(SDL_Window* window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], VK_ContextMask context_mask);
+void VK_DestroyContext(VK_Context *ctx);
+
+void VK_CreateImage(VK_Context *ctx, VkImage *image, VkDeviceMemory *data,  uint32_t width, uint32_t height, uint32_t mip_levels, VkSampleCountFlagBits sample_count, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+VkImageView VK_CreateImageView(VK_Context *ctx, VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, uint32_t mip_levels, bool swizzle);
+VkCommandBuffer VK_BeginSingleTimeCommands(VK_Context *ctx);
+void VK_EndSingleTimeCommands(VK_Context *ctx, VkCommandBuffer *command_buffer);
+
+void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window);
 

@@ -2,9 +2,57 @@
 
 #define NUM(a) (sizeof(a)/sizeof(a[0]))
 
-//VK_BindVertexBuffer(VK_Command *command, uint32_t first_binding, uint32_t binding_count, const VkBuffer* buffer, const VkDeviceSize* offset){}
+command_t VK_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets){
 
-void VK_CreateCommandBuffers(VK_Context *ctx){
+	command_t cmd;
+
+	cmd.type = VK_CMD_BIND_VERTEX_BUFFER;
+
+	cmd.uni.bind_vertex_buffers.p = &vkCmdBindVertexBuffers;
+	cmd.uni.bind_vertex_buffers.first_binding = first_binding;
+	cmd.uni.bind_vertex_buffers.bindings_count = bindings_count;
+	cmd.uni.bind_vertex_buffers.buffers = buffers;
+	cmd.uni.bind_vertex_buffers.offsets = offsets;
+
+	return cmd;
+}
+
+command_t VK_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type){
+	
+	command_t cmd;
+
+	cmd.type = VK_CMD_BIND_INDEX_BUFFER;
+
+	cmd.uni.bind_index_buffers.p = &vkCmdBindIndexBuffer; 
+	cmd.uni.bind_index_buffers.buffer = buffer;
+	cmd.uni.bind_index_buffers.offset = offset;
+	cmd.uni.bind_index_buffers.index_type = index_type;
+
+	return cmd;
+}
+
+void VK_ExecuteCommands(VkCommandBuffer command_buffer, uint32_t count, command_t *cmd){
+
+	for (int i = 0; i < count; ++i) {
+		switch (cmd[i].type) {
+			case VK_CMD_BIND_VERTEX_BUFFER:
+				cmd[i].uni.bind_vertex_buffers.p(command_buffer, cmd[i].uni.bind_vertex_buffers.first_binding, cmd[i].uni.bind_vertex_buffers.bindings_count, cmd[i].uni.bind_vertex_buffers.buffers, cmd[i].uni.bind_vertex_buffers.offsets);
+				break;
+			case VK_CMD_BIND_INDEX_BUFFER:
+				cmd[i].uni.bind_index_buffers.p(command_buffer, cmd[i].uni.bind_index_buffers.buffer, cmd[i].uni.bind_index_buffers.offset, cmd[i].uni.bind_index_buffers.index_type);
+				break;
+			default:
+				break;
+				
+		}
+	}
+
+}
+
+
+
+
+void VK_CreateCommandBuffers(VK_Context *ctx, uint32_t count, command_t *cmd){
 
 	VkCommandBufferAllocateInfo alloc_info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
 	alloc_info.commandPool = ctx->command_pool;
@@ -45,10 +93,12 @@ void VK_CreateCommandBuffers(VK_Context *ctx){
 
 		vkCmdBindPipeline(ctx->command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline);
 
-		VkDeviceSize offsets[] = {0};
 
-		vkCmdBindVertexBuffers(ctx->command_buffers[i], 0, 1, &ctx->vertex_buffer, offsets);
-		vkCmdBindIndexBuffer(ctx->command_buffers[i], ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32);
+		VK_ExecuteCommands(ctx->command_buffers[i],count, cmd);
+
+		//VkDeviceSize offsets[] = {0};
+		//vkCmdBindVertexBuffers(ctx->command_buffers[i], 0, 1, &ctx->vertex_buffer, offsets);
+		//vkCmdBindIndexBuffer(ctx->command_buffers[i], ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(ctx->command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->pipeline_layout, 0, 1, &ctx->descriptor_sets[i], 0, NULL);
 		vkCmdDrawIndexed(ctx->command_buffers[i], ctx->vertices, 1, 0, 0, 0);
 		//vkCmdDraw(ctx->command_buffers[i], ctx->vertices, 1, 0, 0);

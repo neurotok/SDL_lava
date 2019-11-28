@@ -46,8 +46,6 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 
 	ctx->pip = malloc(sizeof(VK_Pipeline));
 
-	printf("%ld\n",sizeof(VK_Context));
-
 	SDL_Vulkan_GetDrawableSize(window, &ctx->window_width, &ctx->window_height);
 
 	ctx->instance = VK_NULL_HANDLE;
@@ -124,7 +122,15 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 
 	VK_CreateDescriptionPool(ctx);
 	VK_CreateDescriptorSets(ctx);
-	VK_CreateCommandBuffers(ctx);
+
+	VkDeviceSize offsets[] = {0};
+
+	command_t comands[] = {
+		VK_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
+		VK_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32)
+	};
+
+	VK_CreateCommandBuffers(ctx, NUM(comands), comands);
 	VK_CreateSyncObjects(ctx);
 
 	return ctx;
@@ -1029,7 +1035,7 @@ void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window){
 	VK_CreateUniformBuffer(ctx);
 	VK_CreateDescriptionPool(ctx);
 	VK_CreateDescriptorSets(ctx);
-	VK_CreateCommandBuffers(ctx);
+	//VK_CreateCommandBuffers(ctx);
 }
 
 

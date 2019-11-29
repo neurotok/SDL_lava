@@ -1,4 +1,3 @@
-//#include <lavalamp.h>
 #include <stdbool.h>
 
 #include <SDL2/SDL_vulkan.h>
@@ -81,14 +80,14 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	VK_GetSampleCount(ctx);
 	VK_CreateRenderPass(ctx);
 
-	VkDescriptorSetLayoutBinding description_set_bindigns[] = { // = {ubo_bindig, sampler_bindig};
+	VkDescriptorSetLayoutBinding description_set_bindigns[] = {
 		VK_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT),
 		VK_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 	};
 
-
 	ctx->pip->descriptor_layout =  VK_CreateDescriptionSetLayout(ctx, NUM(description_set_bindigns), description_set_bindigns);
 	ctx->pip->pipeline_layout = VK_CreatePipelineLayout(ctx, &ctx->pip->descriptor_layout);
+
 	/*
 	const char *shader_sources[] = { "../assets/shaders/vert.spv",  "../assets/shaders/frag.spv"};
 
@@ -125,12 +124,12 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 
 	VkDeviceSize offsets[] = {0};
 
-	command_t comands[] = {
+	command_t commands[] = {
 		VK_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
 		VK_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32)
 	};
 
-	VK_CreateCommandBuffers(ctx, NUM(comands), comands);
+	VK_CreateCommandBuffers(ctx, NUM(commands), commands);
 	VK_CreateSyncObjects(ctx);
 
 	return ctx;
@@ -491,6 +490,7 @@ VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32
 }
 
 VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]){
+
 	VkDescriptorSetLayout bindings;
 
 	VkDescriptorSetLayoutCreateInfo descriptor_layout_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
@@ -607,7 +607,6 @@ VkPipelineShaderStageCreateInfo VK_CreateShaderStage(VK_Context *ctx, const char
 }
 
 void VK_CreateGraphicsPipeline(VK_Context *ctx){
-
 
 	VkShaderModule vert_shader_module = VK_CreateShaderModule(ctx->device, "../assets/shaders/vert.spv");
 
@@ -896,8 +895,8 @@ void VK_CreateDescriptorSets(VK_Context *ctx){
 
 	VkDescriptorSetAllocateInfo descriptor_alloc_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
 	descriptor_alloc_info.descriptorPool = ctx->descriptor_pool,
-		descriptor_alloc_info.descriptorSetCount = ctx->swapchain_images_count,
-		descriptor_alloc_info.pSetLayouts = descriptor_sets_layout;
+	descriptor_alloc_info.descriptorSetCount = ctx->swapchain_images_count,
+	descriptor_alloc_info.pSetLayouts = descriptor_sets_layout;
 
 	assert(vkAllocateDescriptorSets(ctx->device, &descriptor_alloc_info, ctx->descriptor_sets) == VK_SUCCESS);
 
@@ -907,21 +906,21 @@ void VK_CreateDescriptorSets(VK_Context *ctx){
 		ubo_info.buffer = ctx->uniform_buffer[i];
 		ubo_info.offset = 0;
 		ubo_info.range = sizeof(ubo_t);
+	
+		VkWriteDescriptorSet ubo_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+		ubo_write.dstSet = ctx->descriptor_sets[i];
+		ubo_write.dstBinding = 0;
+		ubo_write.dstArrayElement = 0;
+		ubo_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		ubo_write.descriptorCount = 1;
+		ubo_write.pBufferInfo = &ubo_info;
+		ubo_write.pImageInfo = NULL; // Optional
+		ubo_write.pTexelBufferView = NULL; // Optional
 
 		VkDescriptorImageInfo image_info = {0};
 		image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		image_info.imageView = ctx->texture_image_view;
 		image_info.sampler = ctx->texture_sampler;
-
-		VkWriteDescriptorSet ubo_descriptor_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
-		ubo_descriptor_write.dstSet = ctx->descriptor_sets[i];
-		ubo_descriptor_write.dstBinding = 0;
-		ubo_descriptor_write.dstArrayElement = 0;
-		ubo_descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		ubo_descriptor_write.descriptorCount = 1;
-		ubo_descriptor_write.pBufferInfo = &ubo_info;
-		ubo_descriptor_write.pImageInfo = NULL; // Optional
-		ubo_descriptor_write.pTexelBufferView = NULL; // Optional
 
 		VkWriteDescriptorSet image_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
 		image_write.dstSet = ctx->descriptor_sets[i];
@@ -931,13 +930,11 @@ void VK_CreateDescriptorSets(VK_Context *ctx){
 		image_write.descriptorCount = 1;
 		image_write.pImageInfo = &image_info;
 
-		VkWriteDescriptorSet descriptor_write[] = {ubo_descriptor_write, image_write};
+		VkWriteDescriptorSet descriptor_write[] = {ubo_write, image_write};
 
 		vkUpdateDescriptorSets(ctx->device, NUM(descriptor_write), descriptor_write, 0, NULL);
 	}
 }
-
-
 
 void VK_CreateSyncObjects(VK_Context *ctx){
 
@@ -952,6 +949,7 @@ void VK_CreateSyncObjects(VK_Context *ctx){
 		assert(vkCreateFence(ctx->device, &fence_info, NULL, &ctx->in_flight_fence[i]) == VK_SUCCESS);
 	}
 }
+
 void VK_DestroySwapchain(VK_Context *ctx){
 
 	vkDestroyImageView(ctx->device, ctx->depth_image_view, NULL);

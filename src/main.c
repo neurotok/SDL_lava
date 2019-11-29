@@ -43,6 +43,8 @@ int main(void){
 			NUM(device_extensions),
 			device_extensions,
 			VK_CTX_DEBUG | VK_CTX_MIPMAPS | VK_CTX_MULTISAMPLING);
+
+
 	
 	float rotation_angle = 0.0f;	
 	float rotation_speed = 20.0f;

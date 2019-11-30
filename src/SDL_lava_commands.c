@@ -44,7 +44,6 @@ command_t VK_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType i
 	return cmd;
 }
 
-
 command_t VK_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets){
 	
 	command_t cmd;
@@ -59,6 +58,37 @@ command_t VK_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipeli
 	cmd.uni.bind_descriptor_sets.descriptor_sets = descriptor_sets;
 	cmd.uni.bind_descriptor_sets.offset_count = offset_count;
 	cmd.uni.bind_descriptor_sets.offsets = offsets;
+
+	return cmd;
+}
+
+command_t VK_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance){
+
+	command_t cmd;
+
+	cmd.type = VK_CMD_DRAW_INDEXED;
+
+	cmd.uni.draw_indexed.p = &vkCmdDrawIndexed;
+	cmd.uni.draw_indexed.index_count = index_count;
+	cmd.uni.draw_indexed.instance_count = instance_count;
+	cmd.uni.draw_indexed.first_index = first_index;
+	cmd.uni.draw_indexed.vertex_offset = vertex_offset;
+	cmd.uni.draw_indexed.first_instance = first_instance;
+
+	return cmd; 
+}
+
+command_t VK_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance){
+
+	command_t cmd;
+
+	cmd.type =VK_CMD_DRAW;
+
+	cmd.uni.draw.p = &vkCmdDraw;
+	cmd.uni.draw.vertex_count = vertex_count;
+	cmd.uni.draw.instance_count = instance_count;
+	cmd.uni.draw.first_vertex = first_vertex;
+	cmd.uni.draw.first_instance = first_instance;
 
 	return cmd;
 }
@@ -78,6 +108,12 @@ void VK_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descrip
 				break;
 			case VK_CMD_BIND_DESCRIPTOR_SET:
 				cmd[i].uni.bind_descriptor_sets.p(command_buffer, cmd[i].uni.bind_descriptor_sets.pipeline_bind_point, cmd[i].uni.bind_descriptor_sets.layout,cmd[i].uni.bind_descriptor_sets.first_set, cmd[i].uni.bind_descriptor_sets.descriptors_count, cmd[i].uni.bind_descriptor_sets.descriptor_sets, cmd[i].uni.bind_descriptor_sets.offset_count, cmd[i].uni.bind_descriptor_sets.offsets);
+				break;
+			case VK_CMD_DRAW_INDEXED:
+				cmd[i].uni.draw_indexed.p(command_buffer, cmd[i].uni.draw_indexed.index_count, cmd[i].uni.draw_indexed.instance_count, cmd[i].uni.draw_indexed.first_index, cmd[i].uni.draw_indexed.vertex_offset, cmd[i].uni.draw_indexed.first_instance);
+				break;
+			case VK_CMD_DRAW:
+				cmd[i].uni.draw.p(command_buffer, cmd[i].uni.draw.vertex_count, cmd[i].uni.draw.instance_count, cmd[i].uni.draw.first_vertex, cmd[i].uni.draw.first_instance);
 				break;
 			default:
 				break;
@@ -121,20 +157,9 @@ void VK_CreateCommandBuffers(VK_Context *ctx, uint32_t count, command_t *cmd){
 		render_pass_info.clearValueCount = NUM(clear_values);
 		render_pass_info.pClearValues = clear_values;
 
-
 		vkCmdBeginRenderPass(ctx->command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-		//vkCmdBindPipeline(ctx->command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline);
-
 		VK_ExecuteCommands(ctx->command_buffers[i], &ctx->descriptor_sets[i], count, cmd);
-
-		//VkDeviceSize offsets[] = {0};
-		//vkCmdBindVertexBuffers(ctx->command_buffers[i], 0, 1, &ctx->vertex_buffer, offsets);
-		//vkCmdBindIndexBuffer(ctx->command_buffers[i], ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32);
-
-		//vkCmdBindDescriptorSets(ctx->command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->pipeline_layout, 0, 1, &ctx->descriptor_sets[i], 0, NULL);
-		vkCmdDrawIndexed(ctx->command_buffers[i], ctx->vertices, 1, 0, 0, 0);
-		//vkCmdDraw(ctx->command_buffers[i], ctx->vertices, 1, 0, 0);
 
 		vkCmdEndRenderPass(ctx->command_buffers[i]);
 		assert(vkEndCommandBuffer(ctx->command_buffers[i]) == VK_SUCCESS);

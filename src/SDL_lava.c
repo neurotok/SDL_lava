@@ -128,7 +128,9 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 		VK_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline),	
 		VK_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
 		VK_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
-		VK_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL)
+		VK_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
+		VK_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
+		//VK_Draw(ctx->vertices, 1, 0, 0)
 	};
 
 	VK_CreateCommandBuffers(ctx, NUM(commands), commands);

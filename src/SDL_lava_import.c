@@ -20,7 +20,7 @@ void VK_TransitionImageLayout(VK_Context *ctx, VkImage image, VkFormat format, V
 void VK_CopyBufferToImage(VK_Context *ctx, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 void VK_GenerateMipmaps(VK_Context *ctx, VkImage image, VkFormat format, uint32_t width, uint32_t height, uint32_t mip_levels);
 
-void VK_CreateTextureImage(VK_Context *ctx, const char *file){
+void VK_CreateTextureImage(VK_Context *ctx, VK_Texture *tex, const char *file){
 
 	int texture_width, texture_height, texture_channels;
 	stbi_uc *pixels = stbi_load(file, &texture_width, &texture_height, &texture_channels, STBI_rgb_alpha);
@@ -51,7 +51,7 @@ void VK_CreateTextureImage(VK_Context *ctx, const char *file){
 	stbi_image_free(pixels);
 
 	VK_CreateImage(ctx,
-			&ctx->texture_image, &ctx->texture_image_allocation,
+			&tex->texture_image, &tex->texture_image_allocation,
 			texture_width, texture_height,
 			mip_levels, VK_SAMPLE_COUNT_1_BIT, 
 			ctx->swapchain_image_format, 
@@ -60,13 +60,13 @@ void VK_CreateTextureImage(VK_Context *ctx, const char *file){
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	VK_TransitionImageLayout(ctx,
-			ctx->texture_image,
+			tex->texture_image,
 			ctx->swapchain_image_format,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			mip_levels);
 
-	VK_CopyBufferToImage(ctx, staging_buffer, ctx->texture_image, texture_width, texture_height);
+	VK_CopyBufferToImage(ctx, staging_buffer, tex->texture_image, texture_width, texture_height);
 	//TODO
 	/*
 	VK_TransitionImageLayout(ctx,
@@ -81,7 +81,7 @@ void VK_CreateTextureImage(VK_Context *ctx, const char *file){
 	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);
 
 	VK_GenerateMipmaps(ctx,
-			ctx->texture_image,
+			tex->texture_image,
 			ctx->swapchain_image_format,
 			texture_width, texture_height,
 			mip_levels);
@@ -248,14 +248,15 @@ void VK_GenerateMipmaps(VK_Context *ctx, VkImage image, VkFormat format, uint32_
 	VK_EndSingleTimeCommands(ctx, &mips_generation);
 }
 
-void VK_CreateTextureImageView(VK_Context *ctx){
-	ctx->texture_image_view = VK_CreateImageView(ctx,
-			ctx->texture_image, ctx->swapchain_image_format,
+void VK_CreateTextureImageView(VK_Context *ctx, VK_Texture *tex){
+//void VK_CreateTextureImageView(VK_Context *ctx){
+	tex->texture_image_view = VK_CreateImageView(ctx,
+			tex->texture_image, ctx->swapchain_image_format,
 			VK_IMAGE_ASPECT_COLOR_BIT, 1,
 			true);
 }
 
-void VK_CreateTextureSampler(VK_Context *ctx){
+void VK_CreateTextureSampler(VK_Context *ctx, VK_Texture *tex){
 
 	VkSamplerCreateInfo sampler_info = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
 	sampler_info.magFilter = VK_FILTER_LINEAR;
@@ -274,7 +275,7 @@ void VK_CreateTextureSampler(VK_Context *ctx){
 	sampler_info.maxLod = ctx->gen_mips ? ctx->mips_max_level : 0.0f;
 	sampler_info.mipLodBias = 0.0f;
 
-	assert(vkCreateSampler(ctx->device, &sampler_info, NULL, &ctx->texture_sampler) == VK_SUCCESS);
+	assert(vkCreateSampler(ctx->device, &sampler_info, NULL, &tex->texture_sampler) == VK_SUCCESS);
 }
 
 void VK_ParseOBJ(const char *path, mesh_t *mesh){

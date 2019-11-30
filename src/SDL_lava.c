@@ -25,25 +25,23 @@ void VK_CreateRenderPass(VK_Context *ctx);
 
 VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32_t count, VkDescriptorType type, VkShaderStageFlags flag);
 
-VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]);
+//VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]);
 
 //VkPipelineLayout VK_CreatePipelineLayout(VK_Context *ctx, VkDescriptorSetLayout *descriptor_layout);
 
-void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_PipelineLayout *layout);
+void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_Layout *layout);
 void VK_CreateCommandPool(VK_Context *ctx);
 void VK_CreateColorResource(VK_Context *ctx);
 void VK_CreateDepthResource(VK_Context *ctx);
 void VK_CreateFramebuffers(VK_Context *ctx);
 void VK_CreateDescriptionPool(VK_Context *ctx);
-void VK_CreateDescriptorSets(VK_Context *ctx, VK_PipelineLayout *layout);
-//void VK_CreateDescriptorSets(VK_Context *ctx);
+void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex);
+
 void VK_CreateSyncObjects(VK_Context *ctx);
 
 VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], VK_ContextMask context_mask){
 
 	VK_Context *ctx = malloc(sizeof(VK_Context));
-
-	//ctx->layout = malloc(sizeof(VK_PipelineLayout));
 
 	SDL_Vulkan_GetDrawableSize(window, &ctx->window_width, &ctx->window_height);
 
@@ -68,7 +66,7 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	ctx->gen_mips = true;
 	ctx->descriptor_pool = VK_NULL_HANDLE;
 
-	//VK_CreateRenderer
+	//VK_CreateContext
 	VK_CreateInstance(window, ctx, window_title, instance_layers_count, instance_layers, context_mask);
 	VK_CreateSurface(ctx, window);
 	VK_GetPhisicalDevice(ctx);
@@ -85,19 +83,6 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	VK_CreateDepthResource(ctx);
 	VK_CreateFramebuffers(ctx);
 
-	/*
-	VkDescriptorSetLayoutBinding description_set_bindigns[] = {
-		VK_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT),
-		VK_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-	};
-
-	//ctx->layout->descriptor_layout =  VK_CreateDescriptionSetLayout(ctx, NUM(description_set_bindigns), description_set_bindigns);
-	ctx->layout = VK_CreatePipelineLayout(ctx,
-			NUM(description_set_bindigns),
-			description_set_bindigns,
-			0,
-			NULL);
-	*/
 
 	/*
 	const char *shader_sources[] = { "../assets/shaders/vert.spv",  "../assets/shaders/frag.spv"};
@@ -108,10 +93,6 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	};
 
 	ctx->pip->graphics_pipeline = VK_CreateGraphicsPipeline(ctx,
-			NUM(description_set_bindigns),
-			description_set_bindigns,
-			0,
-			NULL,
 			NUM(shader_sources),
 			shader_sources,
 			NUM(attribute_description),
@@ -160,7 +141,7 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	return ctx;
 }
 
-void VK_Rest(VK_Context *ctx, VK_PipelineLayout *layout){
+void VK_Rest(VK_Context *ctx, VK_Layout *layout){
 
 
 	ctx->pip = malloc(sizeof(VK_Pipeline));
@@ -174,17 +155,20 @@ void VK_Rest(VK_Context *ctx, VK_PipelineLayout *layout){
 	//VK_CreateFramebuffers(ctx);
 	
 
+	ctx->tex = malloc(sizeof(VK_Texture));
+	VK_CreateTextureImage(ctx, ctx->tex, "../assets/images/chalet.jpg");
+	VK_CreateTextureImageView(ctx, ctx->tex);
+	VK_CreateTextureSampler(ctx, ctx->tex);
 
-	VK_CreateTextureImage(ctx, "../assets/images/chalet.jpg");
-	//VK_CreateTextureImage(ctx, "../assets/models/DuckCM.png");
-	VK_CreateTextureImageView(ctx);
-	VK_CreateTextureSampler(ctx);
+
+
+
 	VK_LoadModel(ctx, "../assets/models/chalet.obj");
 	//VK_LoadModel(ctx, "../assets/models/Duck.obj`");
 	VK_CreateUniformBuffer(ctx);
 
 	VK_CreateDescriptionPool(ctx);
-	VK_CreateDescriptorSets(ctx, layout);
+	VK_CreateDescriptorSets(ctx, layout, ctx->tex);
 
 	VkDeviceSize offsets[] = {0};
 
@@ -565,7 +549,7 @@ VkPushConstantRange VK_CreatePushCnstant(VkShaderStageFlags stage_flags, uint32_
 	return push_constant;
 }
 /*
-VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]){
+VkDescriptorSetLayout vk_createdescriptionsetlayout(VK_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]){
 
 	VkDescriptorSetLayout bindings;
 
@@ -578,9 +562,9 @@ VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Context *ctx, uint32_t co
 	return bindings;
 }
 */
-VK_PipelineLayout* VK_CreatePipelineLayout(VK_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]){
+VK_Layout* VK_CreatePipelineLayout(VK_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]){
 
-	VK_PipelineLayout *layout = malloc(sizeof(VK_PipelineLayout));
+	VK_Layout *layout = malloc(sizeof(VK_Layout));
 
 	//layout.descriptor_layout = VK_CreateDescriptionSetLayout(ctx, bindings_count, bindings_description);
 
@@ -690,7 +674,7 @@ VkPipelineShaderStageCreateInfo VK_CreateShaderStage(VK_Context *ctx, const char
 
 }
 
-void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_PipelineLayout *layout){
+void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_Layout *layout){
 
 	VkShaderModule vert_shader_module = VK_CreateShaderModule(ctx->device, "../assets/shaders/vert.spv");
 
@@ -969,7 +953,9 @@ void VK_CreateDescriptionPool(VK_Context *ctx){
 	assert(vkCreateDescriptorPool(ctx->device, &descriptor_pool_info, NULL, &ctx->descriptor_pool) == VK_SUCCESS);
 }
 
-void VK_CreateDescriptorSets(VK_Context *ctx, VK_PipelineLayout *layout){
+
+
+void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex){
 
 	VkDescriptorSetLayout descriptor_sets_layout[ctx->swapchain_images_count];
 
@@ -1003,8 +989,8 @@ void VK_CreateDescriptorSets(VK_Context *ctx, VK_PipelineLayout *layout){
 
 		VkDescriptorImageInfo image_info = {0};
 		image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		image_info.imageView = ctx->texture_image_view;
-		image_info.sampler = ctx->texture_sampler;
+		image_info.imageView = ctx->tex->texture_image_view;
+		image_info.sampler = tex->texture_sampler;
 
 		VkWriteDescriptorSet image_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
 		image_write.dstSet = ctx->descriptor_sets[i];
@@ -1034,7 +1020,7 @@ void VK_CreateSyncObjects(VK_Context *ctx){
 	}
 }
 
-void VK_DestroySwapchain(VK_Context *ctx, VK_PipelineLayout *layout){
+void VK_DestroySwapchain(VK_Context *ctx, VK_Layout *layout){
 
 	vkDestroyImageView(ctx->device, ctx->depth_image_view, NULL);
 	vkDestroyImage(ctx->device, ctx->depth_image, NULL);
@@ -1067,16 +1053,17 @@ void VK_DestroySwapchain(VK_Context *ctx, VK_PipelineLayout *layout){
 
 	vkDestroyDescriptorPool(ctx->device, ctx->descriptor_pool, NULL);
 }
-void VK_DestroyContext(VK_Context *ctx, VK_PipelineLayout *layout){
+void VK_DestroyContext(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex){
 
 	vkDeviceWaitIdle(ctx->device);
 
 	VK_DestroySwapchain(ctx, layout);
 
-	vkDestroySampler(ctx->device, ctx->texture_sampler, NULL);
-	vkDestroyImageView(ctx->device, ctx->texture_image_view, NULL);
-	vkDestroyImage(ctx->device, ctx->texture_image, NULL);
-	vkFreeMemory(ctx->device, ctx->texture_image_allocation, NULL);
+	//Texture
+	vkDestroySampler(ctx->device, tex->texture_sampler, NULL);
+	vkDestroyImageView(ctx->device, tex->texture_image_view, NULL);
+	vkDestroyImage(ctx->device, tex->texture_image, NULL);
+	vkFreeMemory(ctx->device, tex->texture_image_allocation, NULL);
 
 	vkDestroyDescriptorSetLayout(ctx->device, layout->descriptor_layout, NULL);
 
@@ -1101,7 +1088,7 @@ void VK_DestroyContext(VK_Context *ctx, VK_PipelineLayout *layout){
 	free(ctx);
 }
 
-void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_PipelineLayout *layout){
+void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_Layout *layout, VK_Texture *tex){
 
 	vkDeviceWaitIdle(ctx->device);
 	
@@ -1116,7 +1103,7 @@ void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_PipelineLayout
 	VK_CreateFramebuffers(ctx);
 	VK_CreateUniformBuffer(ctx);
 	VK_CreateDescriptionPool(ctx);
-	VK_CreateDescriptorSets(ctx, layout);
+	VK_CreateDescriptorSets(ctx, layout, ctx->tex);
 	//VK_CreateCommandBuffers(ctx);
 }
 

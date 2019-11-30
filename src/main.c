@@ -17,7 +17,6 @@
 
 enum{
 	VK_MIN_FRAMETIME = 16, //60fps
-	VK_MAX_VERTEX_ATTRIBUTES = 16
 };
 
 int main(void){
@@ -50,12 +49,14 @@ int main(void){
 		VK_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 	};
 
-	VK_PipelineLayout *layout = VK_CreatePipelineLayout(ctx,
+
+	VK_Layout *layout = VK_CreatePipelineLayout(ctx,
 			NUM(description_set_bindigns),
 			description_set_bindigns,
 			0,
 			NULL);
 
+	
 
 	VK_Rest(ctx, layout);	
 	
@@ -145,7 +146,7 @@ int main(void){
 		VkResult result = vkAcquireNextImageKHR(ctx->device, ctx->swapchain, UINT64_MAX, ctx->image_available_semaphore[current_frame], VK_NULL_HANDLE, &image_index);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			VK_RecreateSwapchain(ctx, window, layout);
+			VK_RecreateSwapchain(ctx, window, layout, ctx->tex);
 			goto REDRAW;
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
@@ -176,7 +177,7 @@ int main(void){
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebuffer_resized) {
 			framebuffer_resized = false;
-			VK_RecreateSwapchain(ctx, window, layout);
+			VK_RecreateSwapchain(ctx, window, layout, ctx->tex);
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
 		}
@@ -185,7 +186,7 @@ int main(void){
 
 	}
 
-	VK_DestroyContext(ctx, layout);
+	VK_DestroyContext(ctx, layout, ctx->tex);
 	SDL_Quit();
 	exit(EXIT_SUCCESS);
 }

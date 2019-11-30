@@ -68,6 +68,11 @@ typedef struct{
 }VK_Texture;
 
 typedef struct{
+	VkBuffer uniform_buffer[2];
+	VkDeviceMemory uniform_buffer_allocation[2];
+}VK_Uniform;
+
+typedef struct{
 	int window_width, window_height;
 	VkInstance instance;
 	VkSurfaceKHR surface;
@@ -86,13 +91,6 @@ typedef struct{
 	VkSampleCountFlagBits sample_count;
 	VkRenderPass render_pass;
 	
-	//VK_PipelineLayout *layout;
-	VK_Pipeline *pip;
-	//VkDescriptorSetLayout descriptor_layout;
-	//VkPipelineLayout pipeline_layout;
-	//VkPipeline graphics_pipeline;
-
-
 	VkCommandPool command_pool;
 	VkImage color_image;
 	VkImage depth_image;
@@ -105,6 +103,13 @@ typedef struct{
 	float mips_max_level;
 	//VK_Image
 	uint32_t mips_level;
+
+	//VK_PipelineLayout *layout;
+	VK_Pipeline *pip;
+	//VkDescriptorSetLayout descriptor_layout;
+	//VkPipelineLayout pipeline_layout;
+	//VkPipeline graphics_pipeline;
+
 
 
 	VK_Texture *tex;
@@ -122,9 +127,12 @@ typedef struct{
 	VkDeviceMemory index_buffer_allocation;
 
 	uint32_t vertices;
+	
+	VK_Uniform *ubo;
+	//VkBuffer uniform_buffer[2];
+	//VkDeviceMemory uniform_buffer_allocation[2];
 
-	VkBuffer uniform_buffer[2];
-	VkDeviceMemory uniform_buffer_allocation[2];
+
 	VkDescriptorPool descriptor_pool;
 	VkDescriptorSet descriptor_sets[2];
 
@@ -142,7 +150,6 @@ VK_Layout* VK_CreatePipelineLayout(VK_Context *ctx, uint32_t bindings_count, VkD
 VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32_t count, VkDescriptorType type, VkShaderStageFlags flag);
 
 VK_Context* VK_CreateContext(SDL_Window* window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], VK_ContextMask context_mask);
-void VK_DestroyContext(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex);
 
 
 void VK_Rest(VK_Context *ctx, VK_Layout *layout);
@@ -152,5 +159,5 @@ VkImageView VK_CreateImageView(VK_Context *ctx, VkImage image, VkFormat format, 
 VkCommandBuffer VK_BeginSingleTimeCommands(VK_Context *ctx);
 void VK_EndSingleTimeCommands(VK_Context *ctx, VkCommandBuffer *command_buffer);
 
-
-void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_Layout *layout, VK_Texture *tex);
+void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo);
+void VK_DestroyContext(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo);

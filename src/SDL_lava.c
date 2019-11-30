@@ -35,7 +35,9 @@ void VK_CreateColorResource(VK_Context *ctx);
 void VK_CreateDepthResource(VK_Context *ctx);
 void VK_CreateFramebuffers(VK_Context *ctx);
 void VK_CreateDescriptionPool(VK_Context *ctx);
-void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex);
+
+
+void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo);
 
 void VK_CreateSyncObjects(VK_Context *ctx);
 
@@ -83,6 +85,7 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	VK_CreateDepthResource(ctx);
 	VK_CreateFramebuffers(ctx);
 
+	VK_CreateDescriptionPool(ctx);
 
 	/*
 	const char *shader_sources[] = { "../assets/shaders/vert.spv",  "../assets/shaders/frag.spv"};
@@ -160,15 +163,19 @@ void VK_Rest(VK_Context *ctx, VK_Layout *layout){
 	VK_CreateTextureImageView(ctx, ctx->tex);
 	VK_CreateTextureSampler(ctx, ctx->tex);
 
-
+	
 
 
 	VK_LoadModel(ctx, "../assets/models/chalet.obj");
 	//VK_LoadModel(ctx, "../assets/models/Duck.obj`");
-	VK_CreateUniformBuffer(ctx);
 
-	VK_CreateDescriptionPool(ctx);
-	VK_CreateDescriptorSets(ctx, layout, ctx->tex);
+	ctx->ubo = malloc(sizeof(VK_Uniform));
+	VK_CreateUniformBuffer(ctx, ctx->ubo);
+
+
+	//VK_CreateDescriptionPool(ctx);
+
+	VK_CreateDescriptorSets(ctx, layout, ctx->tex, ctx->ubo);
 
 	VkDeviceSize offsets[] = {0};
 
@@ -955,7 +962,7 @@ void VK_CreateDescriptionPool(VK_Context *ctx){
 
 
 
-void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex){
+void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo){
 
 	VkDescriptorSetLayout descriptor_sets_layout[ctx->swapchain_images_count];
 
@@ -973,7 +980,7 @@ void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex
 	for (int i = 0; i < ctx->swapchain_images_count; ++i) {
 
 		VkDescriptorBufferInfo ubo_info = {0};
-		ubo_info.buffer = ctx->uniform_buffer[i];
+		ubo_info.buffer = ubo->uniform_buffer[i];
 		ubo_info.offset = 0;
 		ubo_info.range = sizeof(ubo_t);
 	
@@ -1020,7 +1027,7 @@ void VK_CreateSyncObjects(VK_Context *ctx){
 	}
 }
 
-void VK_DestroySwapchain(VK_Context *ctx, VK_Layout *layout){
+void VK_DestroySwapchain(VK_Context *ctx, VK_Layout *layout, VK_Uniform *ubo){
 
 	vkDestroyImageView(ctx->device, ctx->depth_image_view, NULL);
 	vkDestroyImage(ctx->device, ctx->depth_image, NULL);
@@ -1047,17 +1054,17 @@ void VK_DestroySwapchain(VK_Context *ctx, VK_Layout *layout){
 	vkDestroySwapchainKHR(ctx->device, ctx->swapchain, NULL);
 
 	for (int i = 0; i < ctx->swapchain_images_count; i++) {
-		vkDestroyBuffer(ctx->device, ctx->uniform_buffer[i], NULL);
-		vkFreeMemory(ctx->device, ctx->uniform_buffer_allocation[i], NULL);
+		vkDestroyBuffer(ctx->device, ubo->uniform_buffer[i], NULL);
+		vkFreeMemory(ctx->device, ubo->uniform_buffer_allocation[i], NULL);
 	}
 
 	vkDestroyDescriptorPool(ctx->device, ctx->descriptor_pool, NULL);
 }
-void VK_DestroyContext(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex){
+void VK_DestroyContext(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo){
 
 	vkDeviceWaitIdle(ctx->device);
 
-	VK_DestroySwapchain(ctx, layout);
+	VK_DestroySwapchain(ctx, layout, ubo);
 
 	//Texture
 	vkDestroySampler(ctx->device, tex->texture_sampler, NULL);
@@ -1088,11 +1095,11 @@ void VK_DestroyContext(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex){
 	free(ctx);
 }
 
-void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_Layout *layout, VK_Texture *tex){
+void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo){
 
 	vkDeviceWaitIdle(ctx->device);
 	
-	VK_DestroySwapchain(ctx, layout);
+	VK_DestroySwapchain(ctx, layout, ubo);
 
 	VK_CreateSwapchain(ctx, window);
 	VK_CreateSwapchainImageViews(ctx);
@@ -1101,9 +1108,9 @@ void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_Layout *layout
 	VK_CreateColorResource(ctx);
 	VK_CreateDepthResource(ctx);
 	VK_CreateFramebuffers(ctx);
-	VK_CreateUniformBuffer(ctx);
+	VK_CreateUniformBuffer(ctx, ubo);
 	VK_CreateDescriptionPool(ctx);
-	VK_CreateDescriptorSets(ctx, layout, ctx->tex);
+	VK_CreateDescriptorSets(ctx, layout, ctx->tex, ctx->ubo);
 	//VK_CreateCommandBuffers(ctx);
 }
 

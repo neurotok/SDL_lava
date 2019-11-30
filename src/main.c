@@ -135,9 +135,9 @@ int main(void){
 		mvp.proj.Elements[1][1] *= -1.0f;
 
 		void* temp_data; // = malloc(buffer_size);
-		vkMapMemory(ctx->device, ctx->uniform_buffer_allocation[current_frame], 0, sizeof(ubo_t), 0, &temp_data);
+		vkMapMemory(ctx->device, ctx->ubo->uniform_buffer_allocation[current_frame], 0, sizeof(ubo_t), 0, &temp_data);
 		memcpy(temp_data, &mvp, sizeof(ubo_t));
-		vkUnmapMemory(ctx->device, ctx->uniform_buffer_allocation[current_frame]);
+		vkUnmapMemory(ctx->device, ctx->ubo->uniform_buffer_allocation[current_frame]);
 
 
 		vkWaitForFences(ctx->device, 1, &ctx->in_flight_fence[current_frame], VK_TRUE, UINT64_MAX);
@@ -146,7 +146,7 @@ int main(void){
 		VkResult result = vkAcquireNextImageKHR(ctx->device, ctx->swapchain, UINT64_MAX, ctx->image_available_semaphore[current_frame], VK_NULL_HANDLE, &image_index);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			VK_RecreateSwapchain(ctx, window, layout, ctx->tex);
+			VK_RecreateSwapchain(ctx, window, layout, ctx->tex, ctx->ubo);
 			goto REDRAW;
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
@@ -177,7 +177,7 @@ int main(void){
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebuffer_resized) {
 			framebuffer_resized = false;
-			VK_RecreateSwapchain(ctx, window, layout, ctx->tex);
+			VK_RecreateSwapchain(ctx, window, layout, ctx->tex, ctx->ubo);
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
 		}
@@ -186,7 +186,7 @@ int main(void){
 
 	}
 
-	VK_DestroyContext(ctx, layout, ctx->tex);
+	VK_DestroyContext(ctx, layout, ctx->tex, ctx->ubo);
 	SDL_Quit();
 	exit(EXIT_SUCCESS);
 }

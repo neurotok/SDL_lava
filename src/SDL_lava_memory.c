@@ -108,13 +108,13 @@ void VK_CreateIndexBuffer(VK_Context *ctx, mesh_t *mesh){
 	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);
 }
 
-void VK_CreateUniformBuffer(VK_Context *ctx){
+void VK_CreateUniformBuffer(VK_Context *ctx, VK_Uniform *ubo){
 
 	VkDeviceSize buffer_size = sizeof(ubo_t);
 	
 	for (int i = 0; i < 2; ++i) {
 			VK_CreateBuffer(ctx,
-			&ctx->uniform_buffer[i], &ctx->uniform_buffer_allocation[i],
+			&ubo->uniform_buffer[i], &ubo->uniform_buffer_allocation[i],
 			buffer_size,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);

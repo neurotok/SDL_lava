@@ -10,7 +10,6 @@
 
 #define NUM(a) (sizeof(a)/sizeof(a[0]))
 
-
 void VK_CreateSurface(VK_Context *ctx, SDL_Window* window);
 void VK_CreateInstance(SDL_Window *window, VK_Context *ctx, const char *window_title, uint32_t instance_layers_count, const char* instance_layers[], VK_ContextMask context_mask);
 void VK_GetPhisicalDevice(VK_Context *ctx);
@@ -28,22 +27,23 @@ VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32
 
 VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]);
 
-VkPipelineLayout VK_CreatePipelineLayout(VK_Context *ctx, VkDescriptorSetLayout *descriptor_layout);
+//VkPipelineLayout VK_CreatePipelineLayout(VK_Context *ctx, VkDescriptorSetLayout *descriptor_layout);
 
-void VK_CreateGraphicsPipeline(VK_Context *ctx);
+void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_PipelineLayout *layout);
 void VK_CreateCommandPool(VK_Context *ctx);
 void VK_CreateColorResource(VK_Context *ctx);
 void VK_CreateDepthResource(VK_Context *ctx);
 void VK_CreateFramebuffers(VK_Context *ctx);
 void VK_CreateDescriptionPool(VK_Context *ctx);
-void VK_CreateDescriptorSets(VK_Context *ctx);
+void VK_CreateDescriptorSets(VK_Context *ctx, VK_PipelineLayout *layout);
+//void VK_CreateDescriptorSets(VK_Context *ctx);
 void VK_CreateSyncObjects(VK_Context *ctx);
 
 VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], VK_ContextMask context_mask){
 
 	VK_Context *ctx = malloc(sizeof(VK_Context));
 
-	ctx->pip = malloc(sizeof(VK_Pipeline));
+	//ctx->layout = malloc(sizeof(VK_PipelineLayout));
 
 	SDL_Vulkan_GetDrawableSize(window, &ctx->window_width, &ctx->window_height);
 
@@ -58,10 +58,10 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	ctx->depth_image_format = VK_NULL_HANDLE;
 	ctx->render_pass = VK_NULL_HANDLE;
 
-	ctx->pip->descriptor_layout = VK_NULL_HANDLE;
-	ctx->pip->pipeline_layout = VK_NULL_HANDLE;
+	//ctx->layout->descriptor_layout = VK_NULL_HANDLE;
+	//ctx->layout->pipeline_layout = VK_NULL_HANDLE;
 
-	ctx->pip->graphics_pipeline = VK_NULL_HANDLE;
+	//ctx->pip->graphics_pipeline = VK_NULL_HANDLE;
 	ctx->command_pool = VK_NULL_HANDLE;
 	ctx->mips_max_level = 0.0;
 	ctx->device_queue = VK_NULL_HANDLE;
@@ -80,13 +80,24 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	VK_GetSampleCount(ctx);
 	VK_CreateRenderPass(ctx);
 
+	VK_CreateCommandPool(ctx);
+	VK_CreateColorResource(ctx);
+	VK_CreateDepthResource(ctx);
+	VK_CreateFramebuffers(ctx);
+
+	/*
 	VkDescriptorSetLayoutBinding description_set_bindigns[] = {
 		VK_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT),
 		VK_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 	};
 
-	ctx->pip->descriptor_layout =  VK_CreateDescriptionSetLayout(ctx, NUM(description_set_bindigns), description_set_bindigns);
-	ctx->pip->pipeline_layout = VK_CreatePipelineLayout(ctx, &ctx->pip->descriptor_layout);
+	//ctx->layout->descriptor_layout =  VK_CreateDescriptionSetLayout(ctx, NUM(description_set_bindigns), description_set_bindigns);
+	ctx->layout = VK_CreatePipelineLayout(ctx,
+			NUM(description_set_bindigns),
+			description_set_bindigns,
+			0,
+			NULL);
+	*/
 
 	/*
 	const char *shader_sources[] = { "../assets/shaders/vert.spv",  "../assets/shaders/frag.spv"};
@@ -97,19 +108,29 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	};
 
 	ctx->pip->graphics_pipeline = VK_CreateGraphicsPipeline(ctx,
-			&ctx->pipeline_layout,
+			NUM(description_set_bindigns),
+			description_set_bindigns,
+			0,
+			NULL,
 			NUM(shader_sources),
 			shader_sources,
 			NUM(attribute_description),
 			attribute_description,
-			0);
+			pipeline_creation_mask);
 	*/
+
+	
+	/*
+
 	VK_CreateGraphicsPipeline(ctx);
 
-	VK_CreateCommandPool(ctx);
-	VK_CreateColorResource(ctx);
-	VK_CreateDepthResource(ctx);
-	VK_CreateFramebuffers(ctx);
+	
+	//VK_CreateCommandPool(ctx);
+	//VK_CreateColorResource(ctx);
+	//VK_CreateDepthResource(ctx);
+	//VK_CreateFramebuffers(ctx);
+	
+
 
 	VK_CreateTextureImage(ctx, "../assets/images/chalet.jpg");
 	//VK_CreateTextureImage(ctx, "../assets/models/DuckCM.png");
@@ -128,15 +149,56 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 		VK_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline),	
 		VK_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
 		VK_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
-		VK_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
+		VK_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
 		VK_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
 		//VK_Draw(ctx->vertices, 1, 0, 0)
 	};
 
 	VK_CreateCommandBuffers(ctx, NUM(commands), commands);
 	VK_CreateSyncObjects(ctx);
-
+	*/
 	return ctx;
+}
+
+void VK_Rest(VK_Context *ctx, VK_PipelineLayout *layout){
+
+
+	ctx->pip = malloc(sizeof(VK_Pipeline));
+
+	VK_CreateGraphicsPipeline(ctx, layout);
+
+	
+	//VK_CreateCommandPool(ctx);
+	//VK_CreateColorResource(ctx);
+	//VK_CreateDepthResource(ctx);
+	//VK_CreateFramebuffers(ctx);
+	
+
+
+	VK_CreateTextureImage(ctx, "../assets/images/chalet.jpg");
+	//VK_CreateTextureImage(ctx, "../assets/models/DuckCM.png");
+	VK_CreateTextureImageView(ctx);
+	VK_CreateTextureSampler(ctx);
+	VK_LoadModel(ctx, "../assets/models/chalet.obj");
+	//VK_LoadModel(ctx, "../assets/models/Duck.obj`");
+	VK_CreateUniformBuffer(ctx);
+
+	VK_CreateDescriptionPool(ctx);
+	VK_CreateDescriptorSets(ctx, layout);
+
+	VkDeviceSize offsets[] = {0};
+
+	command_t commands[] = {
+		VK_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline),	
+		VK_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
+		VK_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
+		VK_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
+		VK_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
+		//VK_Draw(ctx->vertices, 1, 0, 0)
+	};
+
+	VK_CreateCommandBuffers(ctx, NUM(commands), commands);
+	VK_CreateSyncObjects(ctx);
 }
 
 void VK_CreateInstance(SDL_Window *window, VK_Context *ctx, const char *window_title, uint32_t instance_layers_count, const char* instance_layers[], VK_ContextMask context_mask){
@@ -493,6 +555,16 @@ VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32
 	return bindings_description;
 }
 
+VkPushConstantRange VK_CreatePushCnstant(VkShaderStageFlags stage_flags, uint32_t offset, uint32_t size){
+
+	VkPushConstantRange push_constant;
+	push_constant.stageFlags = stage_flags;
+	push_constant.offset = offset;
+	push_constant.size = size;
+		
+	return push_constant;
+}
+/*
 VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]){
 
 	VkDescriptorSetLayout bindings;
@@ -505,18 +577,26 @@ VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Context *ctx, uint32_t co
 
 	return bindings;
 }
+*/
+VK_PipelineLayout* VK_CreatePipelineLayout(VK_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]){
 
-VkPipelineLayout VK_CreatePipelineLayout(VK_Context *ctx, VkDescriptorSetLayout *descriptor_layout){
+	VK_PipelineLayout *layout = malloc(sizeof(VK_PipelineLayout));
 
-	VkPipelineLayout layout;
+	//layout.descriptor_layout = VK_CreateDescriptionSetLayout(ctx, bindings_count, bindings_description);
+
+	VkDescriptorSetLayoutCreateInfo descriptor_layout_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+	descriptor_layout_info.bindingCount = bindings_count;
+	descriptor_layout_info.pBindings = bindings_description;
+
+	assert(vkCreateDescriptorSetLayout(ctx->device, &descriptor_layout_info, NULL, &layout->descriptor_layout) == VK_SUCCESS);
 
 	VkPipelineLayoutCreateInfo pipeline_layout_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
 	pipeline_layout_info.setLayoutCount = 1; // Optional
-	pipeline_layout_info.pSetLayouts = descriptor_layout; // Optional
-	pipeline_layout_info.pushConstantRangeCount = 0; // Optional
-	pipeline_layout_info.pPushConstantRanges = NULL; // Optional
+	pipeline_layout_info.pSetLayouts = &layout->descriptor_layout; // Optional
+	pipeline_layout_info.pushConstantRangeCount = push_constants_count; // Optional
+	pipeline_layout_info.pPushConstantRanges = push_constants; // Optional
 
-	assert(vkCreatePipelineLayout(ctx->device, &pipeline_layout_info, NULL, &layout) == VK_SUCCESS);
+	assert(vkCreatePipelineLayout(ctx->device, &pipeline_layout_info, NULL, &layout->pipeline_layout) == VK_SUCCESS);
 
 	return layout;
 }
@@ -610,7 +690,7 @@ VkPipelineShaderStageCreateInfo VK_CreateShaderStage(VK_Context *ctx, const char
 
 }
 
-void VK_CreateGraphicsPipeline(VK_Context *ctx){
+void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_PipelineLayout *layout){
 
 	VkShaderModule vert_shader_module = VK_CreateShaderModule(ctx->device, "../assets/shaders/vert.spv");
 
@@ -728,7 +808,7 @@ void VK_CreateGraphicsPipeline(VK_Context *ctx){
 	pipeline_info.pDepthStencilState = &depth_stencil_info;
 	pipeline_info.pColorBlendState = &color_blend_info;
 	pipeline_info.pDynamicState = NULL; // Optional
-	pipeline_info.layout = ctx->pip->pipeline_layout;
+	pipeline_info.layout = layout->pipeline_layout;
 	pipeline_info.renderPass = ctx->render_pass;
 	pipeline_info.subpass = 0;
 	pipeline_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
@@ -889,12 +969,12 @@ void VK_CreateDescriptionPool(VK_Context *ctx){
 	assert(vkCreateDescriptorPool(ctx->device, &descriptor_pool_info, NULL, &ctx->descriptor_pool) == VK_SUCCESS);
 }
 
-void VK_CreateDescriptorSets(VK_Context *ctx){
+void VK_CreateDescriptorSets(VK_Context *ctx, VK_PipelineLayout *layout){
 
 	VkDescriptorSetLayout descriptor_sets_layout[ctx->swapchain_images_count];
 
 	for (uint32_t i = 0; i < ctx->swapchain_images_count; ++i) {
-		descriptor_sets_layout[i] = ctx->pip->descriptor_layout;
+		descriptor_sets_layout[i] = layout->descriptor_layout;
 	}
 
 	VkDescriptorSetAllocateInfo descriptor_alloc_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
@@ -954,7 +1034,7 @@ void VK_CreateSyncObjects(VK_Context *ctx){
 	}
 }
 
-void VK_DestroySwapchain(VK_Context *ctx){
+void VK_DestroySwapchain(VK_Context *ctx, VK_PipelineLayout *layout){
 
 	vkDestroyImageView(ctx->device, ctx->depth_image_view, NULL);
 	vkDestroyImage(ctx->device, ctx->depth_image, NULL);
@@ -971,7 +1051,7 @@ void VK_DestroySwapchain(VK_Context *ctx){
 	vkFreeCommandBuffers(ctx->device, ctx->command_pool,  ctx->swapchain_images_count, ctx->command_buffers); 
 
 	vkDestroyPipeline(ctx->device, ctx->pip->graphics_pipeline, NULL);
-	vkDestroyPipelineLayout(ctx->device, ctx->pip->pipeline_layout, NULL);
+	vkDestroyPipelineLayout(ctx->device, layout->pipeline_layout, NULL);
 	vkDestroyRenderPass(ctx->device, ctx->render_pass, NULL);
 
 	for (int i = 0; i < ctx->swapchain_images_count; i++) {
@@ -987,18 +1067,18 @@ void VK_DestroySwapchain(VK_Context *ctx){
 
 	vkDestroyDescriptorPool(ctx->device, ctx->descriptor_pool, NULL);
 }
-void VK_DestroyContext(VK_Context *ctx){
+void VK_DestroyContext(VK_Context *ctx, VK_PipelineLayout *layout){
 
 	vkDeviceWaitIdle(ctx->device);
 
-	VK_DestroySwapchain(ctx);
+	VK_DestroySwapchain(ctx, layout);
 
 	vkDestroySampler(ctx->device, ctx->texture_sampler, NULL);
 	vkDestroyImageView(ctx->device, ctx->texture_image_view, NULL);
 	vkDestroyImage(ctx->device, ctx->texture_image, NULL);
 	vkFreeMemory(ctx->device, ctx->texture_image_allocation, NULL);
 
-	vkDestroyDescriptorSetLayout(ctx->device, ctx->pip->descriptor_layout, NULL);
+	vkDestroyDescriptorSetLayout(ctx->device, layout->descriptor_layout, NULL);
 
 	vkDestroyBuffer(ctx->device, ctx->index_buffer, NULL);
 	vkFreeMemory(ctx->device, ctx->index_buffer_allocation, NULL);
@@ -1021,22 +1101,22 @@ void VK_DestroyContext(VK_Context *ctx){
 	free(ctx);
 }
 
-void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window){
+void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_PipelineLayout *layout){
 
 	vkDeviceWaitIdle(ctx->device);
 	
-	VK_DestroySwapchain(ctx);
+	VK_DestroySwapchain(ctx, layout);
 
 	VK_CreateSwapchain(ctx, window);
 	VK_CreateSwapchainImageViews(ctx);
 	VK_CreateRenderPass(ctx);
-	VK_CreateGraphicsPipeline(ctx);
+	VK_CreateGraphicsPipeline(ctx, layout);
 	VK_CreateColorResource(ctx);
 	VK_CreateDepthResource(ctx);
 	VK_CreateFramebuffers(ctx);
 	VK_CreateUniformBuffer(ctx);
 	VK_CreateDescriptionPool(ctx);
-	VK_CreateDescriptorSets(ctx);
+	VK_CreateDescriptorSets(ctx, layout);
 	//VK_CreateCommandBuffers(ctx);
 }
 

@@ -45,6 +45,19 @@ int main(void){
 			VK_CTX_DEBUG | VK_CTX_MIPMAPS | VK_CTX_MULTISAMPLING);
 
 
+	VkDescriptorSetLayoutBinding description_set_bindigns[] = {
+		VK_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT),
+		VK_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+	};
+
+	VK_PipelineLayout *layout = VK_CreatePipelineLayout(ctx,
+			NUM(description_set_bindigns),
+			description_set_bindigns,
+			0,
+			NULL);
+
+
+	VK_Rest(ctx, layout);	
 	
 	float rotation_angle = 0.0f;	
 	float rotation_speed = 20.0f;
@@ -132,7 +145,7 @@ int main(void){
 		VkResult result = vkAcquireNextImageKHR(ctx->device, ctx->swapchain, UINT64_MAX, ctx->image_available_semaphore[current_frame], VK_NULL_HANDLE, &image_index);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			VK_RecreateSwapchain(ctx, window);
+			VK_RecreateSwapchain(ctx, window, layout);
 			goto REDRAW;
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
@@ -163,7 +176,7 @@ int main(void){
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebuffer_resized) {
 			framebuffer_resized = false;
-			VK_RecreateSwapchain(ctx, window);
+			VK_RecreateSwapchain(ctx, window, layout);
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
 		}
@@ -172,7 +185,7 @@ int main(void){
 
 	}
 
-	VK_DestroyContext(ctx);
+	VK_DestroyContext(ctx, layout);
 	SDL_Quit();
 	exit(EXIT_SUCCESS);
 }

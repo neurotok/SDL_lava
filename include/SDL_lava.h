@@ -50,10 +50,12 @@ typedef struct ubo_t {
 	alignas(16) hmm_mat4 proj;
 }ubo_t;
 
-
 typedef struct{
 	VkDescriptorSetLayout descriptor_layout;
 	VkPipelineLayout pipeline_layout;
+}VK_PipelineLayout;
+
+typedef struct{
 	VkPipeline graphics_pipeline;
 }VK_Pipeline;
 
@@ -76,7 +78,8 @@ typedef struct{
 	VkFormat depth_image_format;
 	VkSampleCountFlagBits sample_count;
 	VkRenderPass render_pass;
-
+	
+	//VK_PipelineLayout *layout;
 	VK_Pipeline *pip;
 	//VkDescriptorSetLayout descriptor_layout;
 	//VkPipelineLayout pipeline_layout;
@@ -121,15 +124,21 @@ typedef struct{
 }VK_Context;
 
 
+VK_PipelineLayout* VK_CreatePipelineLayout(VK_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]);
 
+VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32_t count, VkDescriptorType type, VkShaderStageFlags flag);
 
 VK_Context* VK_CreateContext(SDL_Window* window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], VK_ContextMask context_mask);
-void VK_DestroyContext(VK_Context *ctx);
+void VK_DestroyContext(VK_Context *ctx, VK_PipelineLayout *layout);
+
+
+void VK_Rest(VK_Context *ctx, VK_PipelineLayout *layout);
 
 void VK_CreateImage(VK_Context *ctx, VkImage *image, VkDeviceMemory *data,  uint32_t width, uint32_t height, uint32_t mip_levels, VkSampleCountFlagBits sample_count, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
 VkImageView VK_CreateImageView(VK_Context *ctx, VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, uint32_t mip_levels, bool swizzle);
 VkCommandBuffer VK_BeginSingleTimeCommands(VK_Context *ctx);
 void VK_EndSingleTimeCommands(VK_Context *ctx, VkCommandBuffer *command_buffer);
 
-void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window);
+void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_PipelineLayout *layout);
+
 

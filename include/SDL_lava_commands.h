@@ -76,8 +76,10 @@ typedef struct{
 	cmd_u uni;
 }command_t;
 
+command_t VK_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline);
 command_t VK_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets);
 command_t VK_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type);
+command_t VK_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets);
 
-
+void VK_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, command_t *cmd);
 void VK_CreateCommandBuffers(VK_Context *ctx, uint32_t count, command_t *cmd);

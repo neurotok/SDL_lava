@@ -2,7 +2,7 @@
 
 #define NUM(a) (sizeof(a)/sizeof(a[0]))
 
-uint32_t VK_GetMemoryType(VK_Context *ctx, uint32_t type_filter, VkMemoryPropertyFlags properties){
+uint32_t LAV_GetMemoryType(LAV_Context *ctx, uint32_t type_filter, VkMemoryPropertyFlags properties){
 
 	VkPhysicalDeviceMemoryProperties mem_properties;
 	vkGetPhysicalDeviceMemoryProperties(ctx->physical_device, &mem_properties);
@@ -14,7 +14,7 @@ uint32_t VK_GetMemoryType(VK_Context *ctx, uint32_t type_filter, VkMemoryPropert
 	return 0;
 }
 
-void VK_CreateBuffer(VK_Context *ctx, VkBuffer *buffer, VkDeviceMemory *data, VkDeviceSize size , VkBufferUsageFlags usage, VkMemoryPropertyFlags properties){
+void LAV_CreateBuffer(LAV_Context *ctx, VkBuffer *buffer, VkDeviceMemory *data, VkDeviceSize size , VkBufferUsageFlags usage, VkMemoryPropertyFlags properties){
 
 	VkBufferCreateInfo buffer_info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
 	buffer_info.size = size;
@@ -29,32 +29,32 @@ void VK_CreateBuffer(VK_Context *ctx, VkBuffer *buffer, VkDeviceMemory *data, Vk
 
 	VkMemoryAllocateInfo alloc_info = {.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
 	alloc_info.allocationSize = mem_requirements.size;
-	alloc_info.memoryTypeIndex = VK_GetMemoryType(ctx,	mem_requirements.memoryTypeBits, properties);
+	alloc_info.memoryTypeIndex = LAV_GetMemoryType(ctx,	mem_requirements.memoryTypeBits, properties);
 
 	assert(vkAllocateMemory(ctx->device, &alloc_info, NULL, data) == VK_SUCCESS);
 
 	vkBindBufferMemory(ctx->device, *buffer, *data, 0);
 }
 
-void VK_CopyBuffer(VK_Context *ctx, VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size) {
-        VkCommandBuffer coppy_buffer = VK_BeginSingleTimeCommands(ctx);
+void LAV_CopyBuffer(LAV_Context *ctx, VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size) {
+        VkCommandBuffer coppy_buffer = LAV_BeginSingleTimeCommands(ctx);
 
         VkBufferCopy copy_region = {0};
         copy_region.size = size;
 
         vkCmdCopyBuffer(coppy_buffer, src_buffer, dst_buffer, 1, &copy_region);
 
-        VK_EndSingleTimeCommands(ctx, &coppy_buffer);
+        LAV_EndSingleTimeCommands(ctx, &coppy_buffer);
     }
 
-void VK_CreateVertexBuffer(VK_Context *ctx, mesh_t *mesh){
+void LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh){
 
 	VkDeviceSize buffer_size = mesh->vertices_size;
 
 	VkBuffer staging_buffer;
 	VkDeviceMemory staging_buffer_allocation;
 
-	VK_CreateBuffer(ctx,
+	LAV_CreateBuffer(ctx,
 			&staging_buffer, &staging_buffer_allocation,
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -66,26 +66,26 @@ void VK_CreateVertexBuffer(VK_Context *ctx, mesh_t *mesh){
 	vkUnmapMemory(ctx->device, staging_buffer_allocation);
 	//free(temp_data);
 
-	VK_CreateBuffer(ctx,
+	LAV_CreateBuffer(ctx,
 			&ctx->vertex_buffer, &ctx->vertex_buffer_allocation,
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	VK_CopyBuffer(ctx, staging_buffer, ctx->vertex_buffer, buffer_size);
+	LAV_CopyBuffer(ctx, staging_buffer, ctx->vertex_buffer, buffer_size);
 
 	vkDestroyBuffer(ctx->device, staging_buffer, NULL);
 	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);
 }
 
-void VK_CreateIndexBuffer(VK_Context *ctx, mesh_t *mesh){
+void LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh){
 
 	VkDeviceSize buffer_size = mesh->indices_size;
 
 	VkBuffer staging_buffer;
 	VkDeviceMemory staging_buffer_allocation;
 
-	VK_CreateBuffer(ctx,
+	LAV_CreateBuffer(ctx,
 			&staging_buffer, &staging_buffer_allocation,
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -96,24 +96,24 @@ void VK_CreateIndexBuffer(VK_Context *ctx, mesh_t *mesh){
 	memcpy(temp_data, mesh->indices, buffer_size);
 	vkUnmapMemory(ctx->device, staging_buffer_allocation);
 
-	VK_CreateBuffer(ctx,
+	LAV_CreateBuffer(ctx,
 			&ctx->index_buffer, &ctx->index_buffer_allocation,
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	VK_CopyBuffer(ctx, staging_buffer, ctx->index_buffer, buffer_size);
+	LAV_CopyBuffer(ctx, staging_buffer, ctx->index_buffer, buffer_size);
 
 	vkDestroyBuffer(ctx->device, staging_buffer, NULL);
 	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);
 }
 
-void VK_CreateUniformBuffer(VK_Context *ctx, VK_Uniform *ubo){
+void LAV_CreateUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer *ubo){
 
 	VkDeviceSize buffer_size = sizeof(ubo_t);
 	
 	for (int i = 0; i < 2; ++i) {
-			VK_CreateBuffer(ctx,
+			LAV_CreateBuffer(ctx,
 			&ubo->uniform_buffer[i], &ubo->uniform_buffer_allocation[i],
 			buffer_size,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,

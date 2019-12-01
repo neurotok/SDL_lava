@@ -16,11 +16,11 @@
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
 
-void VK_TransitionImageLayout(VK_Context *ctx, VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_levels);
-void VK_CopyBufferToImage(VK_Context *ctx, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-void VK_GenerateMipmaps(VK_Context *ctx, VkImage image, VkFormat format, uint32_t width, uint32_t height, uint32_t mip_levels);
+void LAV_TransitionImageLayout(LAV_Context *ctx, VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_levels);
+void LAV_CopyBufferToImage(LAV_Context *ctx, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+void LAV_GenerateMipmaps(LAV_Context *ctx, VkImage image, VkFormat format, uint32_t width, uint32_t height, uint32_t mip_levels);
 
-void VK_CreateTextureImage(VK_Context *ctx, VK_Texture *tex, const char *file){
+void LAV_CreateTextureImage(LAV_Context *ctx, LAV_Texture *tex, const char *file){
 
 	int texture_width, texture_height, texture_channels;
 	stbi_uc *pixels = stbi_load(file, &texture_width, &texture_height, &texture_channels, STBI_rgb_alpha);
@@ -37,7 +37,7 @@ void VK_CreateTextureImage(VK_Context *ctx, VK_Texture *tex, const char *file){
 	VkBuffer staging_buffer;
 	VkDeviceMemory staging_buffer_allocation;
 
-	VK_CreateBuffer(ctx,
+	LAV_CreateBuffer(ctx,
 			&staging_buffer, &staging_buffer_allocation,
 			texture_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -50,7 +50,7 @@ void VK_CreateTextureImage(VK_Context *ctx, VK_Texture *tex, const char *file){
 
 	stbi_image_free(pixels);
 
-	VK_CreateImage(ctx,
+	LAV_CreateImage(ctx,
 			&tex->texture_image, &tex->texture_image_allocation,
 			texture_width, texture_height,
 			mip_levels, VK_SAMPLE_COUNT_1_BIT, 
@@ -59,17 +59,17 @@ void VK_CreateTextureImage(VK_Context *ctx, VK_Texture *tex, const char *file){
 			VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	VK_TransitionImageLayout(ctx,
+	LAV_TransitionImageLayout(ctx,
 			tex->texture_image,
 			ctx->swapchain_image_format,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			mip_levels);
 
-	VK_CopyBufferToImage(ctx, staging_buffer, tex->texture_image, texture_width, texture_height);
+	LAV_CopyBufferToImage(ctx, staging_buffer, tex->texture_image, texture_width, texture_height);
 	//TODO
 	/*
-	VK_TransitionImageLayout(ctx,
+	LAV_TransitionImageLayout(ctx,
 			ctx->texture_image,
 			ctx->swapchain_image_format,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -80,16 +80,16 @@ void VK_CreateTextureImage(VK_Context *ctx, VK_Texture *tex, const char *file){
 	vkDestroyBuffer(ctx->device, staging_buffer, NULL);
 	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);
 
-	VK_GenerateMipmaps(ctx,
+	LAV_GenerateMipmaps(ctx,
 			tex->texture_image,
 			ctx->swapchain_image_format,
 			texture_width, texture_height,
 			mip_levels);
 }
 
-void VK_TransitionImageLayout(VK_Context *ctx, VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_levels){
+void LAV_TransitionImageLayout(LAV_Context *ctx, VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_levels){
 
-	VkCommandBuffer texture_upload = VK_BeginSingleTimeCommands(ctx);
+	VkCommandBuffer texture_upload = LAV_BeginSingleTimeCommands(ctx);
 
 	VkImageMemoryBarrier image_mem_barrier = {.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
 	image_mem_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -130,11 +130,11 @@ void VK_TransitionImageLayout(VK_Context *ctx, VkImage image, VkFormat format, V
 			0, NULL,
 			1, &image_mem_barrier);
 
-	VK_EndSingleTimeCommands(ctx, &texture_upload);
+	LAV_EndSingleTimeCommands(ctx, &texture_upload);
 }
-void VK_CopyBufferToImage(VK_Context *ctx, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height){
+void LAV_CopyBufferToImage(LAV_Context *ctx, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height){
 
-	VkCommandBuffer coppy_image = VK_BeginSingleTimeCommands(ctx);
+	VkCommandBuffer coppy_image = LAV_BeginSingleTimeCommands(ctx);
 
 	VkBufferImageCopy region = {0};
 	region.bufferOffset = 0;
@@ -150,12 +150,12 @@ void VK_CopyBufferToImage(VK_Context *ctx, VkBuffer buffer, VkImage image, uint3
 
 	vkCmdCopyBufferToImage(coppy_image, buffer, image,  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-	VK_EndSingleTimeCommands(ctx, &coppy_image);
+	LAV_EndSingleTimeCommands(ctx, &coppy_image);
 }
 
-void VK_GenerateMipmaps(VK_Context *ctx, VkImage image, VkFormat format, uint32_t width, uint32_t height, uint32_t mip_levels){
+void LAV_GenerateMipmaps(LAV_Context *ctx, VkImage image, VkFormat format, uint32_t width, uint32_t height, uint32_t mip_levels){
 
-	VkCommandBuffer mips_generation = VK_BeginSingleTimeCommands(ctx);
+	VkCommandBuffer mips_generation = LAV_BeginSingleTimeCommands(ctx);
 
 	VkImageMemoryBarrier mips_mem_barrier = {.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
 	mips_mem_barrier.image = image;
@@ -245,18 +245,18 @@ void VK_GenerateMipmaps(VK_Context *ctx, VkImage image, VkFormat format, uint32_
 			0, NULL,
 			1, &mips_mem_barrier);
 
-	VK_EndSingleTimeCommands(ctx, &mips_generation);
+	LAV_EndSingleTimeCommands(ctx, &mips_generation);
 }
 
-void VK_CreateTextureImageView(VK_Context *ctx, VK_Texture *tex){
-//void VK_CreateTextureImageView(VK_Context *ctx){
-	tex->texture_image_view = VK_CreateImageView(ctx,
+void LAV_CreateTextureImageView(LAV_Context *ctx, LAV_Texture *tex){
+//void LAV_CreateTextureImageView(LAV_Context *ctx){
+	tex->texture_image_view = LAV_CreateImageView(ctx,
 			tex->texture_image, ctx->swapchain_image_format,
 			VK_IMAGE_ASPECT_COLOR_BIT, 1,
 			true);
 }
 
-void VK_CreateTextureSampler(VK_Context *ctx, VK_Texture *tex){
+void LAV_CreateTextureSampler(LAV_Context *ctx, LAV_Texture *tex){
 
 	VkSamplerCreateInfo sampler_info = {.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
 	sampler_info.magFilter = VK_FILTER_LINEAR;
@@ -278,7 +278,7 @@ void VK_CreateTextureSampler(VK_Context *ctx, VK_Texture *tex){
 	assert(vkCreateSampler(ctx->device, &sampler_info, NULL, &tex->texture_sampler) == VK_SUCCESS);
 }
 
-void VK_ParseOBJ(const char *path, mesh_t *mesh){
+void LAV_ParseOBJ(const char *path, mesh_t *mesh){
 
 	fastObjMesh* obj = fast_obj_read(path);
 	if (!obj){
@@ -333,7 +333,7 @@ void VK_ParseOBJ(const char *path, mesh_t *mesh){
 	fast_obj_destroy(obj);
 }
 
-cgltf_accessor* VK_GetAccessor(const cgltf_attribute* attributes, size_t attribute_count, cgltf_attribute_type type){
+cgltf_accessor* LAV_GetAccessor(const cgltf_attribute* attributes, size_t attribute_count, cgltf_attribute_type type){
 	int index = 0;
 	for (size_t i = 0; i < attribute_count; ++i)
 		if (attributes[i].type == type && attributes[i].index == index)
@@ -342,7 +342,7 @@ cgltf_accessor* VK_GetAccessor(const cgltf_attribute* attributes, size_t attribu
 	return 0;
 }
 
-void VK_ParseGLTF(const char *path, mesh_t *mesh){
+void LAV_ParseGLTF(const char *path, mesh_t *mesh){
 
 	cgltf_options options = {0};
 	cgltf_data* data = 0;
@@ -380,7 +380,7 @@ void VK_ParseGLTF(const char *path, mesh_t *mesh){
 			const cgltf_primitive *primitive = &a_mesh->primitives[pi];
 
 			cgltf_accessor* ai = primitive->indices;
-			cgltf_accessor* ap = VK_GetAccessor(primitive->attributes, primitive->attributes_count, cgltf_attribute_type_position);
+			cgltf_accessor* ap = LAV_GetAccessor(primitive->attributes, primitive->attributes_count, cgltf_attribute_type_position);
 
 			if (!ai || !ap)
 				continue;
@@ -410,7 +410,7 @@ void VK_ParseGLTF(const char *path, mesh_t *mesh){
 			const cgltf_primitive *primitive = &a_mesh->primitives[pi];
 
 			cgltf_accessor* ai = primitive->indices;
-			cgltf_accessor* ap = VK_GetAccessor(primitive->attributes, primitive->attributes_count, cgltf_attribute_type_position);
+			cgltf_accessor* ap = LAV_GetAccessor(primitive->attributes, primitive->attributes_count, cgltf_attribute_type_position);
 
 			if (!ai || !ap)
 				continue;
@@ -429,7 +429,7 @@ void VK_ParseGLTF(const char *path, mesh_t *mesh){
 				}
 			}
 			/*
-			cgltf_accessor* an = VK_GetAccessor(primitive->attributes, primitive->attributes_count, cgltf_attribute_type_normal);
+			cgltf_accessor* an = LAV_GetAccessor(primitive->attributes, primitive->attributes_count, cgltf_attribute_type_normal);
 
 			if (an){
 				for (size_t i = 0; i < ap->count; ++i){
@@ -442,7 +442,7 @@ void VK_ParseGLTF(const char *path, mesh_t *mesh){
 				}
 			}
 			*/
-			cgltf_accessor* at = VK_GetAccessor(primitive->attributes, primitive->attributes_count, cgltf_attribute_type_texcoord);
+			cgltf_accessor* at = LAV_GetAccessor(primitive->attributes, primitive->attributes_count, cgltf_attribute_type_texcoord);
 
 			if (at){
 
@@ -462,36 +462,36 @@ void VK_ParseGLTF(const char *path, mesh_t *mesh){
 	cgltf_free(data);
 }
 
-void VK_DestroyMesh(mesh_t *mesh){
+void LAV_DestroyMesh(mesh_t *mesh){
 	free(mesh->vertices);
 	free(mesh->indices);
 }
 
 
-void VK_LoadModel(VK_Context *ctx, const char* path)
+void LAV_LoadModel(LAV_Context *ctx, const char* path)
 {
 	if (strstr(path, ".obj")){
 		mesh_t model;
 		model.vertices = NULL;
 		model.indices = NULL;
-		VK_ParseOBJ(path, &model);
-		VK_CreateVertexBuffer(ctx, &model);
-		VK_CreateIndexBuffer(ctx, &model);
+		LAV_ParseOBJ(path, &model);
+		LAV_CreateVertexBuffer(ctx, &model);
+		LAV_CreateIndexBuffer(ctx, &model);
 		//TODO
 		ctx->vertices = model.vertices_size / sizeof(vertex_t);
 		//printf("%f %f %f\n", model.vertices[0].position[0],  model.vertices[0].position[1], model.vertices[0].position[2]);
-		VK_DestroyMesh(&model);
+		LAV_DestroyMesh(&model);
 	};
 
 	if (strstr(path, ".gltf") || strstr(path, ".glb")){
 		mesh_t model;
 		model.vertices = NULL;
 		model.indices = NULL;
-		VK_ParseGLTF(path, &model);
-		VK_CreateVertexBuffer(ctx, &model);
-		VK_CreateIndexBuffer(ctx, &model);
+		LAV_ParseGLTF(path, &model);
+		LAV_CreateVertexBuffer(ctx, &model);
+		LAV_CreateIndexBuffer(ctx, &model);
 		//printf("%f %f %f\n", model.vertices[0].position[0],  model.vertices[0].position[1], model.vertices[0].position[2]);
-		VK_DestroyMesh(&model);
+		LAV_DestroyMesh(&model);
 	};
 }
 

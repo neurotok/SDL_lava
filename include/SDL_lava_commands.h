@@ -3,14 +3,14 @@
 #include "SDL_lava.h"
 
 typedef enum{
-	VK_CMD_BEGIN_RENDER_PASS,
-	VK_CMD_BIND_PIPELINE,
-	VK_CMD_BIND_VERTEX_BUFFER,
-	VK_CMD_BIND_INDEX_BUFFER,
-	VK_CMD_BIND_DESCRIPTOR_SET,
-	VK_CMD_DRAW,
-	VK_CMD_DRAW_INDEXED,
-	VK_CMD_END_RENDER_PASS
+	LAV_CMD_BEGIN_RENDER_PASS,
+	LAV_CMD_BIND_PIPELINE,
+	LAV_CMD_BIND_VERTEX_BUFFER,
+	LAV_CMD_BIND_INDEX_BUFFER,
+	LAV_CMD_BIND_DESCRIPTOR_SET,
+	LAV_CMD_DRAW,
+	LAV_CMD_DRAW_INDEXED,
+	LAV_CMD_END_RENDER_PASS
 }cmd_t;
 
 typedef struct{
@@ -76,12 +76,12 @@ typedef struct{
 	cmd_u uni;
 }command_t;
 
-command_t VK_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline);
-command_t VK_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets);
-command_t VK_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type);
-command_t VK_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets);
-command_t VK_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
-command_t VK_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+command_t LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline);
+command_t LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets);
+command_t LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type);
+command_t LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets);
+command_t LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
+command_t LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
 
-void VK_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, command_t *cmd);
-void VK_CreateCommandBuffers(VK_Context *ctx, uint32_t count, command_t *cmd);
+void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, command_t *cmd);
+void LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, command_t *cmd);

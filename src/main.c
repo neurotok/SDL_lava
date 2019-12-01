@@ -16,7 +16,7 @@
 #define NUM(a) (sizeof(a)/sizeof(a[0]))
 
 enum{
-	VK_MIN_FRAMETIME = 16, //60fps
+	LAV_MIN_FRAMETIME = 16, //60fps
 };
 
 int main(void){
@@ -36,21 +36,21 @@ int main(void){
 	const char *instance_layers[] = {"VK_LAYER_LUNARG_standard_validation"};
 	const char *device_extensions[] = {"VK_KHR_swapchain"};
 
-	VK_Context* ctx = VK_CreateContext(window, window_title,
+	LAV_Context* ctx = LAV_CreateContext(window, window_title,
 			NUM(instance_layers),
 			instance_layers,
 			NUM(device_extensions),
 			device_extensions,
-			VK_CTX_DEBUG | VK_CTX_MIPMAPS | VK_CTX_MULTISAMPLING);
+			LAV_CTX_DEBUG | LAV_CTX_MIPMAPS | LAV_CTX_MULTISAMPLING);
 
 
 	VkDescriptorSetLayoutBinding description_set_bindigns[] = {
-		VK_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT),
-		VK_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		LAV_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT),
+		LAV_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 	};
 
 
-	VK_Layout *layout = VK_CreatePipelineLayout(ctx,
+	LAV_PipelineLayout *layout = LAV_CreatePipelineLayout(ctx,
 			NUM(description_set_bindigns),
 			description_set_bindigns,
 			0,
@@ -58,7 +58,7 @@ int main(void){
 
 	
 
-	VK_Rest(ctx, layout);	
+	LAV_Rest(ctx, layout);	
 	
 	float rotation_angle = 0.0f;	
 	float rotation_speed = 20.0f;
@@ -79,9 +79,9 @@ int main(void){
 		current_time = SDL_GetTicks();
 		elapsed_time = current_time - prev_time;
 		//Framerate limit
-		if(elapsed_time < VK_MIN_FRAMETIME){
+		if(elapsed_time < LAV_MIN_FRAMETIME){
 			// Not enough time has elapsed. Let's limit the frame rate
-			SDL_Delay(VK_MIN_FRAMETIME - elapsed_time);
+			SDL_Delay(LAV_MIN_FRAMETIME - elapsed_time);
 			current_time = SDL_GetTicks();
 			elapsed_time = current_time - prev_time;
 		}
@@ -146,7 +146,7 @@ int main(void){
 		VkResult result = vkAcquireNextImageKHR(ctx->device, ctx->swapchain, UINT64_MAX, ctx->image_available_semaphore[current_frame], VK_NULL_HANDLE, &image_index);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			VK_RecreateSwapchain(ctx, window, layout, ctx->tex, ctx->ubo);
+			LAV_RecreateSwapchain(ctx, window, layout, ctx->tex, ctx->ubo);
 			goto REDRAW;
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
@@ -177,7 +177,7 @@ int main(void){
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebuffer_resized) {
 			framebuffer_resized = false;
-			VK_RecreateSwapchain(ctx, window, layout, ctx->tex, ctx->ubo);
+			LAV_RecreateSwapchain(ctx, window, layout, ctx->tex, ctx->ubo);
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
 		}
@@ -186,7 +186,7 @@ int main(void){
 
 	}
 
-	VK_DestroyContext(ctx, layout, ctx->tex, ctx->ubo);
+	LAV_DestroyContext(ctx, layout, ctx->tex, ctx->ubo);
 	SDL_Quit();
 	exit(EXIT_SUCCESS);
 }

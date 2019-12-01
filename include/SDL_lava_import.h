@@ -4,8 +4,8 @@
 
 
 
-void VK_CreateTextureImage(VK_Context *ctx, VK_Texture *tex, const char *file);
-void VK_CreateTextureImageView(VK_Context *ctx, VK_Texture *tex);
-void VK_CreateTextureSampler(VK_Context *ctx, VK_Texture *tex);
+void LAV_CreateTextureImage(LAV_Context *ctx, LAV_Texture *tex, const char *file);
+void LAV_CreateTextureImageView(LAV_Context *ctx, LAV_Texture *tex);
+void LAV_CreateTextureSampler(LAV_Context *ctx, LAV_Texture *tex);
 
-void VK_LoadModel(VK_Context *ctx, const char* path);
+void LAV_LoadModel(LAV_Context *ctx, const char* path);

@@ -2,11 +2,11 @@
 
 #define NUM(a) (sizeof(a)/sizeof(a[0]))
 
-command_t VK_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline){
+command_t LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline){
 	
 	command_t cmd;
 
-	cmd.type = VK_CMD_BIND_PIPELINE;
+	cmd.type = LAV_CMD_BIND_PIPELINE;
 
 	cmd.uni.bind_pipeline.p = &vkCmdBindPipeline; 
 	cmd.uni.bind_pipeline.bind_point = bind_point;
@@ -15,11 +15,11 @@ command_t VK_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline){
 	return cmd;
 }
 
-command_t VK_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets){
+command_t LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets){
 
 	command_t cmd;
 
-	cmd.type = VK_CMD_BIND_VERTEX_BUFFER;
+	cmd.type = LAV_CMD_BIND_VERTEX_BUFFER;
 
 	cmd.uni.bind_vertex_buffers.p = &vkCmdBindVertexBuffers;
 	cmd.uni.bind_vertex_buffers.first_binding = first_binding;
@@ -30,11 +30,11 @@ command_t VK_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, c
 	return cmd;
 }
 
-command_t VK_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type){
+command_t LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type){
 	
 	command_t cmd;
 
-	cmd.type = VK_CMD_BIND_INDEX_BUFFER;
+	cmd.type = LAV_CMD_BIND_INDEX_BUFFER;
 
 	cmd.uni.bind_index_buffers.p = &vkCmdBindIndexBuffer; 
 	cmd.uni.bind_index_buffers.buffer = buffer;
@@ -44,11 +44,11 @@ command_t VK_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType i
 	return cmd;
 }
 
-command_t VK_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets){
+command_t LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets){
 	
 	command_t cmd;
 
-	cmd.type = VK_CMD_BIND_DESCRIPTOR_SET;
+	cmd.type = LAV_CMD_BIND_DESCRIPTOR_SET;
 
 	cmd.uni.bind_descriptor_sets.p = &vkCmdBindDescriptorSets;
 	cmd.uni.bind_descriptor_sets.pipeline_bind_point = pipeline_bind_point;
@@ -62,11 +62,11 @@ command_t VK_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipeli
 	return cmd;
 }
 
-command_t VK_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance){
+command_t LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance){
 
 	command_t cmd;
 
-	cmd.type = VK_CMD_DRAW_INDEXED;
+	cmd.type = LAV_CMD_DRAW_INDEXED;
 
 	cmd.uni.draw_indexed.p = &vkCmdDrawIndexed;
 	cmd.uni.draw_indexed.index_count = index_count;
@@ -78,11 +78,11 @@ command_t VK_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t
 	return cmd; 
 }
 
-command_t VK_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance){
+command_t LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance){
 
 	command_t cmd;
 
-	cmd.type =VK_CMD_DRAW;
+	cmd.type =LAV_CMD_DRAW;
 
 	cmd.uni.draw.p = &vkCmdDraw;
 	cmd.uni.draw.vertex_count = vertex_count;
@@ -93,26 +93,26 @@ command_t VK_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first
 	return cmd;
 }
 
-void VK_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, command_t *cmd){
+void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, command_t *cmd){
 
 	for (int i = 0; i < count; ++i) {
 		switch (cmd[i].type) {
-			case VK_CMD_BIND_PIPELINE:
+			case LAV_CMD_BIND_PIPELINE:
 				cmd[i].uni.bind_pipeline.p(command_buffer, cmd[i].uni.bind_pipeline.bind_point, cmd[i].uni.bind_pipeline.pipeline);
 				break;
-			case VK_CMD_BIND_VERTEX_BUFFER:
+			case LAV_CMD_BIND_VERTEX_BUFFER:
 				cmd[i].uni.bind_vertex_buffers.p(command_buffer, cmd[i].uni.bind_vertex_buffers.first_binding, cmd[i].uni.bind_vertex_buffers.bindings_count, cmd[i].uni.bind_vertex_buffers.buffers, cmd[i].uni.bind_vertex_buffers.offsets);
 				break;
-			case VK_CMD_BIND_INDEX_BUFFER:
+			case LAV_CMD_BIND_INDEX_BUFFER:
 				cmd[i].uni.bind_index_buffers.p(command_buffer, cmd[i].uni.bind_index_buffers.buffer, cmd[i].uni.bind_index_buffers.offset, cmd[i].uni.bind_index_buffers.index_type);
 				break;
-			case VK_CMD_BIND_DESCRIPTOR_SET:
+			case LAV_CMD_BIND_DESCRIPTOR_SET:
 				cmd[i].uni.bind_descriptor_sets.p(command_buffer, cmd[i].uni.bind_descriptor_sets.pipeline_bind_point, cmd[i].uni.bind_descriptor_sets.layout,cmd[i].uni.bind_descriptor_sets.first_set, cmd[i].uni.bind_descriptor_sets.descriptors_count, cmd[i].uni.bind_descriptor_sets.descriptor_sets, cmd[i].uni.bind_descriptor_sets.offset_count, cmd[i].uni.bind_descriptor_sets.offsets);
 				break;
-			case VK_CMD_DRAW_INDEXED:
+			case LAV_CMD_DRAW_INDEXED:
 				cmd[i].uni.draw_indexed.p(command_buffer, cmd[i].uni.draw_indexed.index_count, cmd[i].uni.draw_indexed.instance_count, cmd[i].uni.draw_indexed.first_index, cmd[i].uni.draw_indexed.vertex_offset, cmd[i].uni.draw_indexed.first_instance);
 				break;
-			case VK_CMD_DRAW:
+			case LAV_CMD_DRAW:
 				cmd[i].uni.draw.p(command_buffer, cmd[i].uni.draw.vertex_count, cmd[i].uni.draw.instance_count, cmd[i].uni.draw.first_vertex, cmd[i].uni.draw.first_instance);
 				break;
 			default:
@@ -121,7 +121,7 @@ void VK_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descrip
 	}
 }
 
-void VK_CreateCommandBuffers(VK_Context *ctx, uint32_t count, command_t *cmd){
+void LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, command_t *cmd){
 
 	VkCommandBufferAllocateInfo alloc_info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
 	alloc_info.commandPool = ctx->command_pool;
@@ -159,7 +159,7 @@ void VK_CreateCommandBuffers(VK_Context *ctx, uint32_t count, command_t *cmd){
 
 		vkCmdBeginRenderPass(ctx->command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-		VK_ExecuteCommands(ctx->command_buffers[i], &ctx->descriptor_sets[i], count, cmd);
+		LAV_ExecuteCommands(ctx->command_buffers[i], &ctx->descriptor_sets[i], count, cmd);
 
 		vkCmdEndRenderPass(ctx->command_buffers[i]);
 		assert(vkEndCommandBuffer(ctx->command_buffers[i]) == VK_SUCCESS);

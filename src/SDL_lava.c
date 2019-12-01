@@ -10,40 +10,40 @@
 
 #define NUM(a) (sizeof(a)/sizeof(a[0]))
 
-void VK_CreateSurface(VK_Context *ctx, SDL_Window* window);
-void VK_CreateInstance(SDL_Window *window, VK_Context *ctx, const char *window_title, uint32_t instance_layers_count, const char* instance_layers[], VK_ContextMask context_mask);
-void VK_GetPhisicalDevice(VK_Context *ctx);
-void VK_CreateDevice(VK_Context *ctx, uint32_t instance_layers_count, const char *instance_layers[], uint32_t  device_extensions_count, const char *device_extensions[], VK_ContextMask context_mask);
-void VK_GetSurfaceFormat(VK_Context *ctx);
-void VK_CreateSwapchain(VK_Context *ctx, SDL_Window *window);
-void VK_CreateSwapchainImageViews(VK_Context *ctx);
-void VK_GetSampleCount(VK_Context *ctx);
-void VK_GetDepthFormat(VK_Context *ctx);
-void VK_CreateRenderPass(VK_Context *ctx);
-//void VK_CreateDescriptionSetLayout(VK_Context *ctx);
-//void VK_CreatePipelineLayout(VK_Context *ctx);
+void LAV_CreateSurface(LAV_Context *ctx, SDL_Window* window);
+void LAV_CreateInstance(SDL_Window *window, LAV_Context *ctx, const char *window_title, uint32_t instance_layers_count, const char* instance_layers[], LAV_ContextMask context_mask);
+void LAV_GetPhisicalDevice(LAV_Context *ctx);
+void LAV_CreateDevice(LAV_Context *ctx, uint32_t instance_layers_count, const char *instance_layers[], uint32_t  device_extensions_count, const char *device_extensions[], LAV_ContextMask context_mask);
+void LAV_GetSurfaceFormat(LAV_Context *ctx);
+void LAV_CreateSwapchain(LAV_Context *ctx, SDL_Window *window);
+void LAV_CreateSwapchainImageViews(LAV_Context *ctx);
+void LAV_GetSampleCount(LAV_Context *ctx);
+void LAV_GetDepthFormat(LAV_Context *ctx);
+void LAV_CreateRenderPass(LAV_Context *ctx);
+//void LAV_CreateDescriptionSetLayout(LAV_Context *ctx);
+//void LAV_CreatePipelineLayout(LAV_Context *ctx);
 
-VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32_t count, VkDescriptorType type, VkShaderStageFlags flag);
+VkDescriptorSetLayoutBinding LAV_CreateBindingDescriptor(uint32_t binding, uint32_t count, VkDescriptorType type, VkShaderStageFlags flag);
 
-//VkDescriptorSetLayout VK_CreateDescriptionSetLayout(VK_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]);
+//VkDescriptorSetLayout LAV_CreateDescriptionSetLayout(LAV_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]);
 
-//VkPipelineLayout VK_CreatePipelineLayout(VK_Context *ctx, VkDescriptorSetLayout *descriptor_layout);
+//VkPipelineLayout LAV_CreatePipelineLayout(LAV_Context *ctx, VkDescriptorSetLayout *descriptor_layout);
 
-void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_Layout *layout);
-void VK_CreateCommandPool(VK_Context *ctx);
-void VK_CreateColorResource(VK_Context *ctx);
-void VK_CreateDepthResource(VK_Context *ctx);
-void VK_CreateFramebuffers(VK_Context *ctx);
-void VK_CreateDescriptionPool(VK_Context *ctx);
+void LAV_CreateGraphicsPipeline(LAV_Context *ctx, LAV_PipelineLayout *layout);
+void LAV_CreateCommandPool(LAV_Context *ctx);
+void LAV_CreateColorResource(LAV_Context *ctx);
+void LAV_CreateDepthResource(LAV_Context *ctx);
+void LAV_CreateFramebuffers(LAV_Context *ctx);
+void LAV_CreateDescriptionPool(LAV_Context *ctx);
 
 
-void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo);
+void LAV_CreateDescriptorSets(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo);
 
-void VK_CreateSyncObjects(VK_Context *ctx);
+void LAV_CreateSyncObjects(LAV_Context *ctx);
 
-VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], VK_ContextMask context_mask){
+LAV_Context* LAV_CreateContext(SDL_Window *window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], LAV_ContextMask context_mask){
 
-	VK_Context *ctx = malloc(sizeof(VK_Context));
+	LAV_Context *ctx = malloc(sizeof(LAV_Context));
 
 	SDL_Vulkan_GetDrawableSize(window, &ctx->window_width, &ctx->window_height);
 
@@ -68,34 +68,34 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	ctx->gen_mips = true;
 	ctx->descriptor_pool = VK_NULL_HANDLE;
 
-	//VK_CreateContext
-	VK_CreateInstance(window, ctx, window_title, instance_layers_count, instance_layers, context_mask);
-	VK_CreateSurface(ctx, window);
-	VK_GetPhisicalDevice(ctx);
-	VK_CreateDevice(ctx, instance_layers_count, instance_layers, device_extensions_count, device_extensions, context_mask);
-	VK_GetSurfaceFormat(ctx);
-	VK_CreateSwapchain(ctx, window);
-	VK_CreateSwapchainImageViews(ctx);
-	VK_GetDepthFormat(ctx);
-	VK_GetSampleCount(ctx);
-	VK_CreateRenderPass(ctx);
+	//LAV_CreateContext
+	LAV_CreateInstance(window, ctx, window_title, instance_layers_count, instance_layers, context_mask);
+	LAV_CreateSurface(ctx, window);
+	LAV_GetPhisicalDevice(ctx);
+	LAV_CreateDevice(ctx, instance_layers_count, instance_layers, device_extensions_count, device_extensions, context_mask);
+	LAV_GetSurfaceFormat(ctx);
+	LAV_CreateSwapchain(ctx, window);
+	LAV_CreateSwapchainImageViews(ctx);
+	LAV_GetDepthFormat(ctx);
+	LAV_GetSampleCount(ctx);
+	LAV_CreateRenderPass(ctx);
 
-	VK_CreateCommandPool(ctx);
-	VK_CreateColorResource(ctx);
-	VK_CreateDepthResource(ctx);
-	VK_CreateFramebuffers(ctx);
+	LAV_CreateCommandPool(ctx);
+	LAV_CreateColorResource(ctx);
+	LAV_CreateDepthResource(ctx);
+	LAV_CreateFramebuffers(ctx);
 
-	VK_CreateDescriptionPool(ctx);
+	LAV_CreateDescriptionPool(ctx);
 
 	/*
 	const char *shader_sources[] = { "../assets/shaders/vert.spv",  "../assets/shaders/frag.spv"};
 
 	VkVertexInputAttributeDescription attribute_description[] = {// = {position_attribute_description, textcoord_attribute_description};
-		VK_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
-		VK_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
+		LAV_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
+		LAV_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
 	};
 
-	ctx->pip->graphics_pipeline = VK_CreateGraphicsPipeline(ctx,
+	ctx->pip->graphics_pipeline = LAV_CreateGraphicsPipeline(ctx,
 			NUM(shader_sources),
 			shader_sources,
 			NUM(attribute_description),
@@ -106,93 +106,93 @@ VK_Context* VK_CreateContext(SDL_Window *window, const char *window_title, uint3
 	
 	/*
 
-	VK_CreateGraphicsPipeline(ctx);
+	LAV_CreateGraphicsPipeline(ctx);
 
 	
-	//VK_CreateCommandPool(ctx);
-	//VK_CreateColorResource(ctx);
-	//VK_CreateDepthResource(ctx);
-	//VK_CreateFramebuffers(ctx);
+	//LAV_CreateCommandPool(ctx);
+	//LAV_CreateColorResource(ctx);
+	//LAV_CreateDepthResource(ctx);
+	//LAV_CreateFramebuffers(ctx);
 	
 
 
-	VK_CreateTextureImage(ctx, "../assets/images/chalet.jpg");
-	//VK_CreateTextureImage(ctx, "../assets/models/DuckCM.png");
-	VK_CreateTextureImageView(ctx);
-	VK_CreateTextureSampler(ctx);
+	LAV_CreateTextureImage(ctx, "../assets/images/chalet.jpg");
+	//LAV_CreateTextureImage(ctx, "../assets/models/DuckCM.png");
+	LAV_CreateTextureImageView(ctx);
+	LAV_CreateTextureSampler(ctx);
 	VK_LoadModel(ctx, "../assets/models/chalet.obj");
 	//VK_LoadModel(ctx, "../assets/models/Duck.obj`");
-	VK_CreateUniformBuffer(ctx);
+	LAV_CreateUniformBuffer(ctx);
 
-	VK_CreateDescriptionPool(ctx);
-	VK_CreateDescriptorSets(ctx);
+	LAV_CreateDescriptionPool(ctx);
+	LAV_CreateDescriptorSets(ctx);
 
 	VkDeviceSize offsets[] = {0};
 
 	command_t commands[] = {
-		VK_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline),	
-		VK_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
-		VK_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
-		VK_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
-		VK_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
-		//VK_Draw(ctx->vertices, 1, 0, 0)
+		LAV_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline),	
+		LAV_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
+		LAV_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
+		LAV_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
+		LAV_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
+		//LAV_Draw(ctx->vertices, 1, 0, 0)
 	};
 
-	VK_CreateCommandBuffers(ctx, NUM(commands), commands);
-	VK_CreateSyncObjects(ctx);
+	LAV_CreateCommandBuffers(ctx, NUM(commands), commands);
+	LAV_CreateSyncObjects(ctx);
 	*/
 	return ctx;
 }
 
-void VK_Rest(VK_Context *ctx, VK_Layout *layout){
+void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout){
 
 
-	ctx->pip = malloc(sizeof(VK_Pipeline));
+	ctx->pip = malloc(sizeof(LAV_Pipeline));
 
-	VK_CreateGraphicsPipeline(ctx, layout);
-
-	
-	//VK_CreateCommandPool(ctx);
-	//VK_CreateColorResource(ctx);
-	//VK_CreateDepthResource(ctx);
-	//VK_CreateFramebuffers(ctx);
-	
-
-	ctx->tex = malloc(sizeof(VK_Texture));
-	VK_CreateTextureImage(ctx, ctx->tex, "../assets/images/chalet.jpg");
-	VK_CreateTextureImageView(ctx, ctx->tex);
-	VK_CreateTextureSampler(ctx, ctx->tex);
+	LAV_CreateGraphicsPipeline(ctx, layout);
 
 	
+	//LAV_CreateCommandPool(ctx);
+	//LAV_CreateColorResource(ctx);
+	//LAV_CreateDepthResource(ctx);
+	//LAV_CreateFramebuffers(ctx);
+	
+
+	ctx->tex = malloc(sizeof(LAV_Texture));
+	LAV_CreateTextureImage(ctx, ctx->tex, "../assets/images/chalet.jpg");
+	LAV_CreateTextureImageView(ctx, ctx->tex);
+	LAV_CreateTextureSampler(ctx, ctx->tex);
+
+	
 
 
-	VK_LoadModel(ctx, "../assets/models/chalet.obj");
+	LAV_LoadModel(ctx, "../assets/models/chalet.obj");
 	//VK_LoadModel(ctx, "../assets/models/Duck.obj`");
 
-	ctx->ubo = malloc(sizeof(VK_Uniform));
-	VK_CreateUniformBuffer(ctx, ctx->ubo);
+	ctx->ubo = malloc(sizeof(LAV_UniformBuffer));
+	LAV_CreateUniformBuffer(ctx, ctx->ubo);
 
 
-	//VK_CreateDescriptionPool(ctx);
+	//LAV_CreateDescriptionPool(ctx);
 
-	VK_CreateDescriptorSets(ctx, layout, ctx->tex, ctx->ubo);
+	LAV_CreateDescriptorSets(ctx, layout, ctx->tex, ctx->ubo);
 
 	VkDeviceSize offsets[] = {0};
 
 	command_t commands[] = {
-		VK_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline),	
-		VK_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
-		VK_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
-		VK_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
-		VK_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
-		//VK_Draw(ctx->vertices, 1, 0, 0)
+		LAV_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline),	
+		LAV_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
+		LAV_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
+		LAV_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
+		LAV_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
+		//LAV_Draw(ctx->vertices, 1, 0, 0)
 	};
 
-	VK_CreateCommandBuffers(ctx, NUM(commands), commands);
-	VK_CreateSyncObjects(ctx);
+	LAV_CreateCommandBuffers(ctx, NUM(commands), commands);
+	LAV_CreateSyncObjects(ctx);
 }
 
-void VK_CreateInstance(SDL_Window *window, VK_Context *ctx, const char *window_title, uint32_t instance_layers_count, const char* instance_layers[], VK_ContextMask context_mask){
+void LAV_CreateInstance(SDL_Window *window, LAV_Context *ctx, const char *window_title, uint32_t instance_layers_count, const char* instance_layers[], LAV_ContextMask context_mask){
 
 	uint32_t instance_extensions_count;
 	SDL_Vulkan_GetInstanceExtensions(window, &instance_extensions_count, NULL);
@@ -211,19 +211,19 @@ void VK_CreateInstance(SDL_Window *window, VK_Context *ctx, const char *window_t
 	instance_create_info.pNext = NULL;
 	instance_create_info.flags = 0;
 	instance_create_info.pApplicationInfo = &app_info;
-	instance_create_info.enabledLayerCount = context_mask & VK_CTX_DEBUG ? instance_layers_count : 0;
-	instance_create_info.ppEnabledLayerNames = context_mask & VK_CTX_DEBUG ? instance_layers : VK_NULL_HANDLE;
+	instance_create_info.enabledLayerCount = context_mask & LAV_CTX_DEBUG ? instance_layers_count : 0;
+	instance_create_info.ppEnabledLayerNames = context_mask & LAV_CTX_DEBUG ? instance_layers : VK_NULL_HANDLE;
 	instance_create_info.enabledExtensionCount = instance_extensions_count;
 	instance_create_info.ppEnabledExtensionNames = instance_extensions,
 
-		assert(vkCreateInstance(&instance_create_info, NULL, &ctx->instance) == VK_SUCCESS);
+	assert(vkCreateInstance(&instance_create_info, NULL, &ctx->instance) == VK_SUCCESS);
 }
 
-void VK_CreateSurface(VK_Context *ctx, SDL_Window* window){
+void LAV_CreateSurface(LAV_Context *ctx, SDL_Window* window){
 	assert(SDL_Vulkan_CreateSurface(window, ctx->instance, &ctx->surface) == 1);
 }
 
-void VK_GetPhisicalDevice(VK_Context *ctx){
+void LAV_GetPhisicalDevice(LAV_Context *ctx){
 
 	uint32_t devices_count = 0;
 	vkEnumeratePhysicalDevices(ctx->instance, &devices_count, NULL);
@@ -256,7 +256,7 @@ void VK_GetPhisicalDevice(VK_Context *ctx){
 	}
 }
 
-void VK_CreateDevice(VK_Context *ctx, uint32_t instance_layers_count, const char *instance_layers[], uint32_t  device_extensions_count, const char *device_extensions[], VK_ContextMask context_mask){
+void LAV_CreateDevice(LAV_Context *ctx, uint32_t instance_layers_count, const char *instance_layers[], uint32_t  device_extensions_count, const char *device_extensions[], LAV_ContextMask context_mask){
 
 	VkDeviceQueueCreateInfo device_queue_create_info = {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
 	device_queue_create_info.pNext = NULL;
@@ -278,8 +278,8 @@ void VK_CreateDevice(VK_Context *ctx, uint32_t instance_layers_count, const char
 	device_create_info.flags = 0;
 	device_create_info.queueCreateInfoCount = 1;
 	device_create_info.pQueueCreateInfos = &device_queue_create_info;
-	device_create_info.enabledLayerCount = context_mask & VK_CTX_DEBUG ? instance_layers_count : 0;
-	device_create_info.ppEnabledLayerNames =  context_mask & VK_CTX_DEBUG ? instance_layers : VK_NULL_HANDLE;
+	device_create_info.enabledLayerCount = context_mask & LAV_CTX_DEBUG ? instance_layers_count : 0;
+	device_create_info.ppEnabledLayerNames =  context_mask & LAV_CTX_DEBUG ? instance_layers : VK_NULL_HANDLE;
 	device_create_info.enabledExtensionCount = device_extensions_count > 0 ? device_extensions_count : 0;
 	device_create_info.ppEnabledExtensionNames =device_extensions_count > 0 ? device_extensions : VK_NULL_HANDLE;
 	device_create_info.pEnabledFeatures = &device_features;
@@ -289,7 +289,7 @@ void VK_CreateDevice(VK_Context *ctx, uint32_t instance_layers_count, const char
 	vkGetDeviceQueue(ctx->device,ctx->queue_family_index, 0, &ctx->device_queue);
 }
 
-void VK_GetDepthFormat(VK_Context *ctx){
+void LAV_GetDepthFormat(LAV_Context *ctx){
 
 	VkFormat depth_formats[] = {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
 	VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -316,7 +316,7 @@ void VK_GetDepthFormat(VK_Context *ctx){
 
 }
 
-void VK_GetSurfaceFormat(VK_Context *ctx){
+void LAV_GetSurfaceFormat(LAV_Context *ctx){
 
 	uint32_t surface_formats_count = 0;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(ctx->physical_device, ctx->surface, &surface_formats_count, NULL);
@@ -348,7 +348,7 @@ void VK_GetSurfaceFormat(VK_Context *ctx){
 	}
 }
 
-VkImageView VK_CreateImageView(VK_Context *ctx, VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, uint32_t mip_levels, bool swizzle){
+VkImageView LAV_CreateImageView(LAV_Context *ctx, VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, uint32_t mip_levels, bool swizzle){
 
 	VkImageViewCreateInfo image_view_create_info = {.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
 	image_view_create_info.image = image;
@@ -374,7 +374,7 @@ VkImageView VK_CreateImageView(VK_Context *ctx, VkImage image, VkFormat format, 
 	return  image_view;
 }
 
-VkExtent2D VK_GetSwapchainExtent(VK_Context *ctx, SDL_Window *window, VkSurfaceCapabilitiesKHR *surface_capabilities){
+VkExtent2D LAV_GetSwapchainExtent(LAV_Context *ctx, SDL_Window *window, VkSurfaceCapabilitiesKHR *surface_capabilities){
 
 	if (surface_capabilities->currentExtent.width != UINT32_MAX) {
 		return surface_capabilities->currentExtent;
@@ -389,7 +389,7 @@ VkExtent2D VK_GetSwapchainExtent(VK_Context *ctx, SDL_Window *window, VkSurfaceC
 	}
 }
 
-void VK_CreateSwapchain(VK_Context *ctx, SDL_Window *window){
+void LAV_CreateSwapchain(LAV_Context *ctx, SDL_Window *window){
 
 	VkSurfaceCapabilitiesKHR surface_capabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(ctx->physical_device, ctx->surface, &surface_capabilities);
@@ -427,11 +427,11 @@ void VK_CreateSwapchain(VK_Context *ctx, SDL_Window *window){
 	vkGetSwapchainImagesKHR(ctx->device, ctx->swapchain, &ctx->swapchain_images_count, ctx->swapchain_images);
 }
 
-void VK_CreateSwapchainImageViews(VK_Context *ctx){
+void LAV_CreateSwapchainImageViews(LAV_Context *ctx){
 
 	for (uint32_t i = 0; i < ctx->swapchain_images_count; ++i) {
 
-		ctx->swapchain_images_views[i] = VK_CreateImageView(ctx,
+		ctx->swapchain_images_views[i] = LAV_CreateImageView(ctx,
 				ctx->swapchain_images[i],
 				ctx->swapchain_image_format,
 				VK_IMAGE_ASPECT_COLOR_BIT,
@@ -441,7 +441,7 @@ void VK_CreateSwapchainImageViews(VK_Context *ctx){
 
 }
 
-void VK_GetSampleCount(VK_Context *ctx){
+void LAV_GetSampleCount(LAV_Context *ctx){
 
 	ctx->sample_count = VK_SAMPLE_COUNT_1_BIT;
 
@@ -460,7 +460,7 @@ void VK_GetSampleCount(VK_Context *ctx){
 	if (counts & VK_SAMPLE_COUNT_2_BIT) { ctx->sample_count = VK_SAMPLE_COUNT_2_BIT; }
 }
 
-void VK_CreateRenderPass(VK_Context *ctx){
+void LAV_CreateRenderPass(LAV_Context *ctx){
 
 	VkAttachmentDescription swachain_images = {0};
 	swachain_images.format = ctx->swapchain_image_format;
@@ -534,7 +534,7 @@ void VK_CreateRenderPass(VK_Context *ctx){
 	assert(vkCreateRenderPass(ctx->device, &render_pass_info, NULL, &ctx->render_pass) == VK_SUCCESS);
 }
 
-VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32_t count, VkDescriptorType type, VkShaderStageFlags flag){
+VkDescriptorSetLayoutBinding LAV_CreateBindingDescriptor(uint32_t binding, uint32_t count, VkDescriptorType type, VkShaderStageFlags flag){
 
 	VkDescriptorSetLayoutBinding bindings_description;
 	bindings_description.binding = binding;
@@ -546,7 +546,7 @@ VkDescriptorSetLayoutBinding VK_CreateBindingDescriptor(uint32_t binding, uint32
 	return bindings_description;
 }
 
-VkPushConstantRange VK_CreatePushCnstant(VkShaderStageFlags stage_flags, uint32_t offset, uint32_t size){
+VkPushConstantRange LAV_CreatePushCnstant(VkShaderStageFlags stage_flags, uint32_t offset, uint32_t size){
 
 	VkPushConstantRange push_constant;
 	push_constant.stageFlags = stage_flags;
@@ -556,7 +556,7 @@ VkPushConstantRange VK_CreatePushCnstant(VkShaderStageFlags stage_flags, uint32_
 	return push_constant;
 }
 /*
-VkDescriptorSetLayout vk_createdescriptionsetlayout(VK_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]){
+VkDescriptorSetLayout vk_createdescriptionsetlayout(LAV_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]){
 
 	VkDescriptorSetLayout bindings;
 
@@ -569,11 +569,11 @@ VkDescriptorSetLayout vk_createdescriptionsetlayout(VK_Context *ctx, uint32_t co
 	return bindings;
 }
 */
-VK_Layout* VK_CreatePipelineLayout(VK_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]){
+LAV_PipelineLayout* LAV_CreatePipelineLayout(LAV_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]){
 
-	VK_Layout *layout = malloc(sizeof(VK_Layout));
+	LAV_PipelineLayout *layout = malloc(sizeof(LAV_PipelineLayout));
 
-	//layout.descriptor_layout = VK_CreateDescriptionSetLayout(ctx, bindings_count, bindings_description);
+	//layout.descriptor_layout = LAV_CreateDescriptionSetLayout(ctx, bindings_count, bindings_description);
 
 	VkDescriptorSetLayoutCreateInfo descriptor_layout_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
 	descriptor_layout_info.bindingCount = bindings_count;
@@ -592,7 +592,7 @@ VK_Layout* VK_CreatePipelineLayout(VK_Context *ctx, uint32_t bindings_count, VkD
 	return layout;
 }
 
-VkShaderModule VK_CreateShaderModule(VkDevice device, char *filename){
+VkShaderModule LAV_CreateShaderModule(VkDevice device, char *filename){
 	FILE *file = fopen(filename,"r");
 
 	if (!file) {
@@ -627,7 +627,7 @@ VkShaderModule VK_CreateShaderModule(VkDevice device, char *filename){
 	return shader_module;
 }
 
-VkVertexInputAttributeDescription VK_CreateShaderDescriptor(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset){
+VkVertexInputAttributeDescription LAV_CreateShaderDescriptor(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset){
 
 	VkVertexInputAttributeDescription attribute = {0};
 	attribute.binding = binding;
@@ -638,7 +638,7 @@ VkVertexInputAttributeDescription VK_CreateShaderDescriptor(uint32_t binding, ui
 	return attribute;
 }
 
-VkVertexInputBindingDescription VK_CreateVertexInputDescriptor(uint32_t binding, uint32_t stride, VkVertexInputRate input_rate){
+VkVertexInputBindingDescription LAV_CreateVertexInputDescriptor(uint32_t binding, uint32_t stride, VkVertexInputRate input_rate){
 
 	VkVertexInputBindingDescription vertex_input = {0};
 	vertex_input.binding = binding;
@@ -649,11 +649,11 @@ VkVertexInputBindingDescription VK_CreateVertexInputDescriptor(uint32_t binding,
 }
 
 
-VkPipelineShaderStageCreateInfo VK_CreateShaderStage(VK_Context *ctx, const char *path){
+VkPipelineShaderStageCreateInfo LAV_CreateShaderStage(LAV_Context *ctx, const char *path){
 
 	if (strstr(path, ".vert") || strstr(path, ".vs") || strstr(path, ".vertex")){
 	
-		VkShaderModule vert_shader_module = VK_CreateShaderModule(ctx->device, "../assets/shaders/vert.spv");
+		VkShaderModule vert_shader_module = LAV_CreateShaderModule(ctx->device, "../assets/shaders/vert.spv");
 
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
 		vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -665,7 +665,7 @@ VkPipelineShaderStageCreateInfo VK_CreateShaderStage(VK_Context *ctx, const char
 
 	if (strstr(path, ".frag") || strstr(path, ".fs") || strstr(path, ".fragment")){
 
-		VkShaderModule frag_shader_module = VK_CreateShaderModule(ctx->device, "../assets/shaders/frag.spv");
+		VkShaderModule frag_shader_module = LAV_CreateShaderModule(ctx->device, "../assets/shaders/frag.spv");
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
 		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -681,16 +681,16 @@ VkPipelineShaderStageCreateInfo VK_CreateShaderStage(VK_Context *ctx, const char
 
 }
 
-void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_Layout *layout){
+void LAV_CreateGraphicsPipeline(LAV_Context *ctx, LAV_PipelineLayout *layout){
 
-	VkShaderModule vert_shader_module = VK_CreateShaderModule(ctx->device, "../assets/shaders/vert.spv");
+	VkShaderModule vert_shader_module = LAV_CreateShaderModule(ctx->device, "../assets/shaders/vert.spv");
 
 	VkPipelineShaderStageCreateInfo vert_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
 	vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
 	vert_shader_stage_info.module = vert_shader_module;
 	vert_shader_stage_info.pName = "main";
 
-	VkShaderModule frag_shader_module = VK_CreateShaderModule(ctx->device, "../assets/shaders/frag.spv");
+	VkShaderModule frag_shader_module = LAV_CreateShaderModule(ctx->device, "../assets/shaders/frag.spv");
 
 	VkPipelineShaderStageCreateInfo frag_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
 	frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -699,11 +699,11 @@ void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_Layout *layout){
 
 	VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info, frag_shader_stage_info};
 
-	VkVertexInputBindingDescription bindings_description = VK_CreateVertexInputDescriptor(0, 5 * sizeof(float), VK_VERTEX_INPUT_RATE_VERTEX);
+	VkVertexInputBindingDescription bindings_description = LAV_CreateVertexInputDescriptor(0, 5 * sizeof(float), VK_VERTEX_INPUT_RATE_VERTEX);
 	
 	VkVertexInputAttributeDescription attribute_description[] = {// = {position_attribute_description, textcoord_attribute_description};
-		VK_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
-		VK_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
+		LAV_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
+		LAV_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
 	};
 
 	VkPipelineVertexInputStateCreateInfo vertex_input_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
@@ -811,7 +811,7 @@ void VK_CreateGraphicsPipeline(VK_Context *ctx, VK_Layout *layout){
 	vkDestroyShaderModule(ctx->device, frag_shader_module, NULL);
 }
 
-void VK_CreateCommandPool(VK_Context *ctx){
+void LAV_CreateCommandPool(LAV_Context *ctx){
 
 	VkCommandPoolCreateInfo pool_info = {.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
 	pool_info.queueFamilyIndex = ctx->queue_family_index; //assuming one graphics queue family
@@ -821,7 +821,7 @@ void VK_CreateCommandPool(VK_Context *ctx){
 }
 
 
-void VK_CreateImage(VK_Context *ctx, VkImage *image, VkDeviceMemory *data,  uint32_t width, uint32_t height, uint32_t mip_levels, VkSampleCountFlagBits sample_count,  VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties){
+void LAV_CreateImage(LAV_Context *ctx, VkImage *image, VkDeviceMemory *data,  uint32_t width, uint32_t height, uint32_t mip_levels, VkSampleCountFlagBits sample_count,  VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties){
 
 	VkImageCreateInfo image_info = {.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
 	image_info.imageType = VK_IMAGE_TYPE_2D;
@@ -845,16 +845,16 @@ void VK_CreateImage(VK_Context *ctx, VkImage *image, VkDeviceMemory *data,  uint
 
 	VkMemoryAllocateInfo alloc_info = {.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
 	alloc_info.allocationSize = image_mem_requirements.size;
-	alloc_info.memoryTypeIndex = VK_GetMemoryType(ctx, image_mem_requirements.memoryTypeBits, properties);
+	alloc_info.memoryTypeIndex = LAV_GetMemoryType(ctx, image_mem_requirements.memoryTypeBits, properties);
 
 	assert(vkAllocateMemory(ctx->device, &alloc_info, NULL, data) == VK_SUCCESS);
 
 	vkBindImageMemory(ctx->device, *image, *data, 0);
 }
 
-void VK_CreateColorResource(VK_Context *ctx){
+void LAV_CreateColorResource(LAV_Context *ctx){
 
-	VK_CreateImage(ctx,
+	LAV_CreateImage(ctx,
 			&ctx->color_image, &ctx->color_image_allocation,
 			ctx->window_width, ctx->window_height,
 			1, ctx->sample_count,
@@ -863,15 +863,15 @@ void VK_CreateColorResource(VK_Context *ctx){
 			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	ctx->color_image_view = VK_CreateImageView(ctx,
+	ctx->color_image_view = LAV_CreateImageView(ctx,
 			ctx->color_image, ctx->swapchain_image_format,
 			VK_IMAGE_ASPECT_COLOR_BIT, 1,
 			false);
 }
 
-void VK_CreateDepthResource(VK_Context *ctx){
+void LAV_CreateDepthResource(LAV_Context *ctx){
 
-	VK_CreateImage(ctx,
+	LAV_CreateImage(ctx,
 			&ctx->depth_image, &ctx->depth_image_allocation,
 			ctx->window_width, ctx->window_height,
 			1, ctx->sample_count,
@@ -880,13 +880,13 @@ void VK_CreateDepthResource(VK_Context *ctx){
 			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	ctx->depth_image_view = VK_CreateImageView(ctx,
+	ctx->depth_image_view = LAV_CreateImageView(ctx,
 			ctx->depth_image, ctx->depth_image_format,
 			VK_IMAGE_ASPECT_DEPTH_BIT, 1,
 			false);
 }
 
-void VK_CreateFramebuffers(VK_Context *ctx){
+void LAV_CreateFramebuffers(LAV_Context *ctx){
 
 	for (uint32_t i = 0; i < ctx->swapchain_images_count; ++i) {
 
@@ -908,7 +908,7 @@ void VK_CreateFramebuffers(VK_Context *ctx){
 	}
 }
 
-VkCommandBuffer VK_BeginSingleTimeCommands(VK_Context *ctx) {
+VkCommandBuffer LAV_BeginSingleTimeCommands(LAV_Context *ctx) {
 
 	VkCommandBufferAllocateInfo alloc_info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
 	alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -926,7 +926,7 @@ VkCommandBuffer VK_BeginSingleTimeCommands(VK_Context *ctx) {
 	return command_buffer;
 }
 
-void VK_EndSingleTimeCommands(VK_Context *ctx, VkCommandBuffer *command_buffer) {
+void LAV_EndSingleTimeCommands(LAV_Context *ctx, VkCommandBuffer *command_buffer) {
 
 	vkEndCommandBuffer(*command_buffer);
 
@@ -940,7 +940,7 @@ void VK_EndSingleTimeCommands(VK_Context *ctx, VkCommandBuffer *command_buffer) 
 	vkFreeCommandBuffers(ctx->device, ctx->command_pool, 1, command_buffer);
 }
 
-void VK_CreateDescriptionPool(VK_Context *ctx){
+void LAV_CreateDescriptionPool(LAV_Context *ctx){
 
 	VkDescriptorPoolSize ubo_descriptor = {0};
 	ubo_descriptor.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -961,8 +961,7 @@ void VK_CreateDescriptionPool(VK_Context *ctx){
 }
 
 
-
-void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo){
+void LAV_CreateDescriptorSets(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo){
 
 	VkDescriptorSetLayout descriptor_sets_layout[ctx->swapchain_images_count];
 
@@ -1013,7 +1012,7 @@ void VK_CreateDescriptorSets(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex
 	}
 }
 
-void VK_CreateSyncObjects(VK_Context *ctx){
+void LAV_CreateSyncObjects(LAV_Context *ctx){
 
 	VkSemaphoreCreateInfo semaphore_info = {.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
 
@@ -1027,7 +1026,7 @@ void VK_CreateSyncObjects(VK_Context *ctx){
 	}
 }
 
-void VK_DestroySwapchain(VK_Context *ctx, VK_Layout *layout, VK_Uniform *ubo){
+void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_UniformBuffer *ubo){
 
 	vkDestroyImageView(ctx->device, ctx->depth_image_view, NULL);
 	vkDestroyImage(ctx->device, ctx->depth_image, NULL);
@@ -1060,11 +1059,11 @@ void VK_DestroySwapchain(VK_Context *ctx, VK_Layout *layout, VK_Uniform *ubo){
 
 	vkDestroyDescriptorPool(ctx->device, ctx->descriptor_pool, NULL);
 }
-void VK_DestroyContext(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo){
+void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo){
 
 	vkDeviceWaitIdle(ctx->device);
 
-	VK_DestroySwapchain(ctx, layout, ubo);
+	LAV_DestroySwapchain(ctx, layout, ubo);
 
 	//Texture
 	vkDestroySampler(ctx->device, tex->texture_sampler, NULL);
@@ -1095,23 +1094,23 @@ void VK_DestroyContext(VK_Context *ctx, VK_Layout *layout, VK_Texture *tex, VK_U
 	free(ctx);
 }
 
-void VK_RecreateSwapchain(VK_Context *ctx, SDL_Window *window, VK_Layout *layout, VK_Texture *tex, VK_Uniform *ubo){
+void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo){
 
 	vkDeviceWaitIdle(ctx->device);
 	
-	VK_DestroySwapchain(ctx, layout, ubo);
+	LAV_DestroySwapchain(ctx, layout, ubo);
 
-	VK_CreateSwapchain(ctx, window);
-	VK_CreateSwapchainImageViews(ctx);
-	VK_CreateRenderPass(ctx);
-	VK_CreateGraphicsPipeline(ctx, layout);
-	VK_CreateColorResource(ctx);
-	VK_CreateDepthResource(ctx);
-	VK_CreateFramebuffers(ctx);
-	VK_CreateUniformBuffer(ctx, ubo);
-	VK_CreateDescriptionPool(ctx);
-	VK_CreateDescriptorSets(ctx, layout, ctx->tex, ctx->ubo);
-	//VK_CreateCommandBuffers(ctx);
+	LAV_CreateSwapchain(ctx, window);
+	LAV_CreateSwapchainImageViews(ctx);
+	LAV_CreateRenderPass(ctx);
+	LAV_CreateGraphicsPipeline(ctx, layout);
+	LAV_CreateColorResource(ctx);
+	LAV_CreateDepthResource(ctx);
+	LAV_CreateFramebuffers(ctx);
+	LAV_CreateUniformBuffer(ctx, ubo);
+	LAV_CreateDescriptionPool(ctx);
+	LAV_CreateDescriptorSets(ctx, layout, ctx->tex, ctx->ubo);
+	//LAV_CreateCommandBuffers(ctx);
 }
 
 

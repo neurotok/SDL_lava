@@ -2,10 +2,10 @@
 
 #include "SDL_lava.h"
 
-uint32_t VK_GetMemoryType(VK_Context *ctx, uint32_t type_filter, VkMemoryPropertyFlags properties);
-void VK_CreateBuffer(VK_Context *ctx, VkBuffer *buffer, VkDeviceMemory *data, VkDeviceSize size , VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
-void VK_CreateVertexBuffer(VK_Context *ctx, mesh_t *mesh);
-void VK_CreateIndexBuffer(VK_Context *ctx, mesh_t *mesh);
-void VK_CreateUniformBuffer(VK_Context *ctx, VK_Uniform *ubo);
+uint32_t LAV_GetMemoryType(LAV_Context *ctx, uint32_t type_filter, VkMemoryPropertyFlags properties);
+void LAV_CreateBuffer(LAV_Context *ctx, VkBuffer *buffer, VkDeviceMemory *data, VkDeviceSize size , VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+void LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh);
+void LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh);
+void LAV_CreateUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer *ubo);
 
-void VK_CopyBuffer(VK_Context *ctx, VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size) ;
+void LAV_CopyBuffer(LAV_Context *ctx, VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size) ;

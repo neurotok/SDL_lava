@@ -24,11 +24,29 @@ typedef enum{
 	LAV_CTX_MULTISAMPLING = 8,
 }LAV_ContextMask;
 
+/*
+typedef enum{
+	LAV_CULL_CLOCKWISE = 1,
+	LAV_POINTS = 2,
+	LAV_LINES = 4
+}LAV_RasterizationMask;
+
+typedef enum{
+	LAV_DEPTH_TEST_DISABLE = 1,
+	LAV_DEPTH_WRITE_DISABLE = 2
+}LAV_DepthStencilMask;
+
+typedef enum{
+	LAV_BLEND_DISABLE = 1
+}LAV_BlendMask;
+*/
+
 typedef enum{
 	LAV_PIP_CULLING_CLOCKWISE = 1,
-	LAV_PIP_DOUBLEBUF = 2,
-	LAV_PIP_MIPMAPS = 4,
-	LAV_PIP_MULTISAMPLING = 8,
+	LAV_PIP_MODE_POINTS = 2,
+	LAV_PIP_MODE_LINES = 4,
+	LAV_PIP_DEPTH_DISABLE = 8,
+	LAV_PIP_BLEND_DISABLE = 16,
 }LAV_PipelineMask;
 
 typedef struct{
@@ -105,7 +123,7 @@ typedef struct{
 	uint32_t mips_level;
 
 	//LAV_PipelineLayout *layout;
-	LAV_Pipeline *pip;
+	//LAV_Pipeline *pip;
 	//VkDescriptorSetLayout descriptor_layout;
 	//VkPipelineLayout pipeline_layout;
 	//VkPipeline graphics_pipeline;
@@ -152,12 +170,18 @@ VkDescriptorSetLayoutBinding LAV_CreateBindingDescriptor(uint32_t binding, uint3
 LAV_Context* LAV_CreateContext(SDL_Window* window, const char *window_title, uint32_t instance_layers_count, const char *instance_layers[], uint32_t device_extensions_count, const char *device_extensions[], LAV_ContextMask context_mask);
 
 
-void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout);
+VkVertexInputBindingDescription LAV_CreateVertexInputDescriptor(uint32_t binding, uint32_t stride, VkVertexInputRate input_rate);
+VkVertexInputAttributeDescription LAV_CreateShaderDescriptor(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset);
+
+LAV_Pipeline* LAV_CreatePipeline(LAV_Context *ctx, LAV_PipelineLayout *layout, uint32_t shaders_count, const char *shaders_sources[], uint32_t inputs_count,  VkVertexInputBindingDescription input_description[], uint32_t attributes_count , VkVertexInputAttributeDescription attribute_description[], LAV_PipelineMask pipeline_flags);
+
+
+void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip);
 
 void LAV_CreateImage(LAV_Context *ctx, VkImage *image, VkDeviceMemory *data,  uint32_t width, uint32_t height, uint32_t mip_levels, VkSampleCountFlagBits sample_count, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
 VkImageView LAV_CreateImageView(LAV_Context *ctx, VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, uint32_t mip_levels, bool swizzle);
 VkCommandBuffer LAV_BeginSingleTimeCommands(LAV_Context *ctx);
 void LAV_EndSingleTimeCommands(LAV_Context *ctx, VkCommandBuffer *command_buffer);
 
-void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo);
-void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo);
+void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo);
+void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo);

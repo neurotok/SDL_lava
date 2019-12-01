@@ -37,28 +37,38 @@ int main(void){
 	const char *device_extensions[] = {"VK_KHR_swapchain"};
 
 	LAV_Context* ctx = LAV_CreateContext(window, window_title,
-			NUM(instance_layers),
-			instance_layers,
-			NUM(device_extensions),
-			device_extensions,
+			NUM(instance_layers), instance_layers,
+			NUM(device_extensions),	device_extensions,
 			LAV_CTX_DEBUG | LAV_CTX_MIPMAPS | LAV_CTX_MULTISAMPLING);
-
 
 	VkDescriptorSetLayoutBinding description_set_bindigns[] = {
 		LAV_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT),
 		LAV_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 	};
 
-
 	LAV_PipelineLayout *layout = LAV_CreatePipelineLayout(ctx,
-			NUM(description_set_bindigns),
-			description_set_bindigns,
-			0,
-			NULL);
+			NUM(description_set_bindigns), description_set_bindigns,
+			0, NULL);
 
+	const char *flat_texture_shaders[] = {"../assets/shaders/flat_texture.vert.spv", "../assets/shaders/flat_texture.frag.spv" };
+
+	VkVertexInputBindingDescription input_description[] = {
+		LAV_CreateVertexInputDescriptor(0, 5 * sizeof(float), VK_VERTEX_INPUT_RATE_VERTEX)
+	};
 	
+	VkVertexInputAttributeDescription attribute_description[] = {
+		LAV_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
+		LAV_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
+	};
 
-	LAV_Rest(ctx, layout);	
+	LAV_Pipeline *pip = LAV_CreatePipeline(ctx, layout,
+			NUM(flat_texture_shaders), flat_texture_shaders,
+			NUM(input_description), input_description,
+			NUM(attribute_description),	attribute_description,
+			0);
+
+
+	LAV_Rest(ctx, layout, pip);	
 	
 	float rotation_angle = 0.0f;	
 	float rotation_speed = 20.0f;
@@ -146,7 +156,7 @@ int main(void){
 		VkResult result = vkAcquireNextImageKHR(ctx->device, ctx->swapchain, UINT64_MAX, ctx->image_available_semaphore[current_frame], VK_NULL_HANDLE, &image_index);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			LAV_RecreateSwapchain(ctx, window, layout, ctx->tex, ctx->ubo);
+			LAV_RecreateSwapchain(ctx, window, layout, pip, ctx->tex, ctx->ubo);
 			goto REDRAW;
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
@@ -177,7 +187,7 @@ int main(void){
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebuffer_resized) {
 			framebuffer_resized = false;
-			LAV_RecreateSwapchain(ctx, window, layout, ctx->tex, ctx->ubo);
+			LAV_RecreateSwapchain(ctx, window, layout, pip, ctx->tex, ctx->ubo);
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
 		}
@@ -186,7 +196,7 @@ int main(void){
 
 	}
 
-	LAV_DestroyContext(ctx, layout, ctx->tex, ctx->ubo);
+	LAV_DestroyContext(ctx, layout, pip, ctx->tex, ctx->ubo);
 	SDL_Quit();
 	exit(EXIT_SUCCESS);
 }

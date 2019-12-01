@@ -3,16 +3,14 @@ SDL2 C99 based Vulkan framework add-on
 
 Current data typs:
 
-VK_PipelineLayout
+LAV_Texture
+LAV_UniformBuffer
 
-VK_Pipeline
+LAV_VertexBuffer
+LAV_IndexBuffer
 
-VK_BufferDescritor
-VK_ImageDescriptor
+LAV_Pipeline
 
-VK_Descriptors
+LAV_DescriptorSet
 
-VK_VertexBuffer
-VK_IndexBuffer
-
-VK_CommandBuffer
+LAV_CommandBuffer

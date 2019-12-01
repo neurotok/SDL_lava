@@ -86,7 +86,7 @@ LAV_Context* LAV_CreateContext(SDL_Window *window, const char *window_title, uin
 	LAV_CreateFramebuffers(ctx);
 
 	LAV_CreateDescriptionPool(ctx);
-
+	LAV_CreateSyncObjects(ctx);
 	/*
 	const char *shader_sources[] = { "../assets/shaders/vert.spv",  "../assets/shaders/frag.spv"};
 
@@ -144,12 +144,12 @@ LAV_Context* LAV_CreateContext(SDL_Window *window, const char *window_title, uin
 	return ctx;
 }
 
-void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout){
+void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip){
 
 
-	ctx->pip = malloc(sizeof(LAV_Pipeline));
 
-	LAV_CreateGraphicsPipeline(ctx, layout);
+
+	//LAV_CreateGraphicsPipeline(ctx, layout);
 
 	
 	//LAV_CreateCommandPool(ctx);
@@ -179,8 +179,8 @@ void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout){
 
 	VkDeviceSize offsets[] = {0};
 
-	command_t commands[] = {
-		LAV_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline),	
+	LavCommand commands[] = {
+		LAV_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pip->graphics_pipeline),	
 		LAV_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
 		LAV_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
 		LAV_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
@@ -189,7 +189,7 @@ void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout){
 	};
 
 	LAV_CreateCommandBuffers(ctx, NUM(commands), commands);
-	LAV_CreateSyncObjects(ctx);
+	//LAV_CreateSyncObjects(ctx);
 }
 
 void LAV_CreateInstance(SDL_Window *window, LAV_Context *ctx, const char *window_title, uint32_t instance_layers_count, const char* instance_layers[], LAV_ContextMask context_mask){
@@ -592,7 +592,7 @@ LAV_PipelineLayout* LAV_CreatePipelineLayout(LAV_Context *ctx, uint32_t bindings
 	return layout;
 }
 
-VkShaderModule LAV_CreateShaderModule(VkDevice device, char *filename){
+VkShaderModule LAV_CreateShaderModule(VkDevice device,const char *filename){
 	FILE *file = fopen(filename,"r");
 
 	if (!file) {
@@ -648,31 +648,26 @@ VkVertexInputBindingDescription LAV_CreateVertexInputDescriptor(uint32_t binding
 	return vertex_input;
 }
 
+VkPipelineShaderStageCreateInfo LAV_CreateShaderStage(const char *path, VkShaderModule shader_module){
 
-VkPipelineShaderStageCreateInfo LAV_CreateShaderStage(LAV_Context *ctx, const char *path){
+
+	VkPipelineShaderStageCreateInfo shader_stage = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
+
+	shader_stage.module = shader_module;
+	shader_stage.pName = "main";
 
 	if (strstr(path, ".vert") || strstr(path, ".vs") || strstr(path, ".vertex")){
 	
-		VkShaderModule vert_shader_module = LAV_CreateShaderModule(ctx->device, "../assets/shaders/vert.spv");
+		shader_stage.stage = VK_SHADER_STAGE_VERTEX_BIT;
 
-		VkPipelineShaderStageCreateInfo vert_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
-		vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vert_shader_stage_info.module = vert_shader_module;
-		vert_shader_stage_info.pName = "main";
-
-		return vert_shader_stage_info;
+		return shader_stage;
 	};
 
 	if (strstr(path, ".frag") || strstr(path, ".fs") || strstr(path, ".fragment")){
 
-		VkShaderModule frag_shader_module = LAV_CreateShaderModule(ctx->device, "../assets/shaders/frag.spv");
+		shader_stage.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
-		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		frag_shader_stage_info.module = frag_shader_module;
-		frag_shader_stage_info.pName = "main";
-
-		 return frag_shader_stage_info;
+		return shader_stage;
 	};
 
 	printf("Error: could not detect shader type of the file %s, please use:\n .vert, .vertex, .vs file extensions for the vertex shader files\n	.frag, .fragment, .fs file extensions for the fragment shader files\n",	path);
@@ -681,35 +676,24 @@ VkPipelineShaderStageCreateInfo LAV_CreateShaderStage(LAV_Context *ctx, const ch
 
 }
 
-void LAV_CreateGraphicsPipeline(LAV_Context *ctx, LAV_PipelineLayout *layout){
 
-	VkShaderModule vert_shader_module = LAV_CreateShaderModule(ctx->device, "../assets/shaders/vert.spv");
+LAV_Pipeline* LAV_CreatePipeline(LAV_Context *ctx, LAV_PipelineLayout *layout, uint32_t shaders_count, const char *shaders_sources[], uint32_t inputs_count,  VkVertexInputBindingDescription input_description[], uint32_t attributes_count , VkVertexInputAttributeDescription attribute_description[], LAV_PipelineMask pipeline_flags){
 
-	VkPipelineShaderStageCreateInfo vert_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
-	vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vert_shader_stage_info.module = vert_shader_module;
-	vert_shader_stage_info.pName = "main";
+	LAV_Pipeline *pipeline = malloc(sizeof(LAV_Pipeline));	
 
-	VkShaderModule frag_shader_module = LAV_CreateShaderModule(ctx->device, "../assets/shaders/frag.spv");
 
-	VkPipelineShaderStageCreateInfo frag_shader_stage_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
-	frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	frag_shader_stage_info.module = frag_shader_module;
-	frag_shader_stage_info.pName = "main";
+	VkShaderModule shader_modules[shaders_count];
+	VkPipelineShaderStageCreateInfo shader_stages[shaders_count];
 
-	VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info, frag_shader_stage_info};
-
-	VkVertexInputBindingDescription bindings_description = LAV_CreateVertexInputDescriptor(0, 5 * sizeof(float), VK_VERTEX_INPUT_RATE_VERTEX);
-	
-	VkVertexInputAttributeDescription attribute_description[] = {// = {position_attribute_description, textcoord_attribute_description};
-		LAV_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
-		LAV_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
-	};
+	for (int i = 0; i < shaders_count; ++i) {
+		shader_modules[i] = LAV_CreateShaderModule(ctx->device, shaders_sources[i]);
+		shader_stages[i] = LAV_CreateShaderStage(shaders_sources[i], shader_modules[i]); 
+	}
 
 	VkPipelineVertexInputStateCreateInfo vertex_input_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
-	vertex_input_info.vertexBindingDescriptionCount = 1;
-	vertex_input_info.pVertexBindingDescriptions = &bindings_description;
-	vertex_input_info.vertexAttributeDescriptionCount = NUM(attribute_description);
+	vertex_input_info.vertexBindingDescriptionCount = inputs_count;
+	vertex_input_info.pVertexBindingDescriptions = input_description; // &bindings_description;
+	vertex_input_info.vertexAttributeDescriptionCount = attributes_count; //NUM(attribute_description);
 	vertex_input_info.pVertexAttributeDescriptions = attribute_description;
 
 	VkPipelineInputAssemblyStateCreateInfo input_assembly_info = {.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};
@@ -789,7 +773,7 @@ void LAV_CreateGraphicsPipeline(LAV_Context *ctx, LAV_PipelineLayout *layout){
 	color_blend_info.blendConstants[3] = 0.0f; // Optional
 
 	VkGraphicsPipelineCreateInfo pipeline_info = {.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
-	pipeline_info.stageCount = 2;
+	pipeline_info.stageCount = shaders_count;
 	pipeline_info.pStages = shader_stages;
 	pipeline_info.pVertexInputState = &vertex_input_info;
 	pipeline_info.pInputAssemblyState = &input_assembly_info;
@@ -805,10 +789,13 @@ void LAV_CreateGraphicsPipeline(LAV_Context *ctx, LAV_PipelineLayout *layout){
 	pipeline_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipeline_info.basePipelineIndex = -1; // Optional
 
-	assert(vkCreateGraphicsPipelines(ctx->device, VK_NULL_HANDLE, 1, &pipeline_info, NULL, &ctx->pip->graphics_pipeline) == VK_SUCCESS);
+	assert(vkCreateGraphicsPipelines(ctx->device, VK_NULL_HANDLE, 1, &pipeline_info, NULL, &pipeline->graphics_pipeline) == VK_SUCCESS);
 
-	vkDestroyShaderModule(ctx->device, vert_shader_module, NULL);
-	vkDestroyShaderModule(ctx->device, frag_shader_module, NULL);
+	for (int i = 0; i < shaders_count; ++i) {
+		vkDestroyShaderModule(ctx->device, shader_modules[i], NULL);
+	}
+
+	return pipeline;
 }
 
 void LAV_CreateCommandPool(LAV_Context *ctx){
@@ -1026,7 +1013,7 @@ void LAV_CreateSyncObjects(LAV_Context *ctx){
 	}
 }
 
-void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_UniformBuffer *ubo){
+void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_UniformBuffer *ubo){
 
 	vkDestroyImageView(ctx->device, ctx->depth_image_view, NULL);
 	vkDestroyImage(ctx->device, ctx->depth_image, NULL);
@@ -1042,7 +1029,7 @@ void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Unif
 
 	vkFreeCommandBuffers(ctx->device, ctx->command_pool,  ctx->swapchain_images_count, ctx->command_buffers); 
 
-	vkDestroyPipeline(ctx->device, ctx->pip->graphics_pipeline, NULL);
+	vkDestroyPipeline(ctx->device, pip->graphics_pipeline, NULL);
 	vkDestroyPipelineLayout(ctx->device, layout->pipeline_layout, NULL);
 	vkDestroyRenderPass(ctx->device, ctx->render_pass, NULL);
 
@@ -1059,11 +1046,11 @@ void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Unif
 
 	vkDestroyDescriptorPool(ctx->device, ctx->descriptor_pool, NULL);
 }
-void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo){
+void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo){
 
 	vkDeviceWaitIdle(ctx->device);
 
-	LAV_DestroySwapchain(ctx, layout, ubo);
+	LAV_DestroySwapchain(ctx, layout, pip,  ubo);
 
 	//Texture
 	vkDestroySampler(ctx->device, tex->texture_sampler, NULL);
@@ -1094,16 +1081,16 @@ void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Textur
 	free(ctx);
 }
 
-void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo){
+void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo){
 
 	vkDeviceWaitIdle(ctx->device);
 	
-	LAV_DestroySwapchain(ctx, layout, ubo);
+	LAV_DestroySwapchain(ctx, layout, pip,  ubo);
 
 	LAV_CreateSwapchain(ctx, window);
 	LAV_CreateSwapchainImageViews(ctx);
 	LAV_CreateRenderPass(ctx);
-	LAV_CreateGraphicsPipeline(ctx, layout);
+	//LAV_CreatePipeline(ctx, layout);
 	LAV_CreateColorResource(ctx);
 	LAV_CreateDepthResource(ctx);
 	LAV_CreateFramebuffers(ctx);

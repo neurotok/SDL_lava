@@ -68,7 +68,6 @@ int main(void){
 			0);
 
 	LAV_UniformBuffer *ubo = LAV_CreateUniformBuffer(ctx, sizeof(ubo_t));
-
 	LAV_Texture *tex = LAV_CreateTexture(ctx, "../assets/images/chalet.jpg"); 
 
 	//Rest

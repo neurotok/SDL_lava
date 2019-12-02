@@ -193,8 +193,15 @@ void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, L
 	*/
 
 	//LAV_CreateDescriptionPool(ctx);
-
+	/*
+	LavDescriptors descriptors[] = {
+		LAV_WriteUniformBuffer
+		LAV_Write 
+	}
+	*/
 	LAV_CreateDescriptorSets(ctx, layout, tex, ubo);
+
+	/*
 
 	VkDeviceSize offsets[] = {0};
 
@@ -208,6 +215,7 @@ void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, L
 	};
 
 	LAV_CreateCommandBuffers(ctx, NUM(commands), commands);
+	*/
 	//LAV_CreateSyncObjects(ctx);
 }
 
@@ -1056,7 +1064,7 @@ void LAV_CreateSyncObjects(LAV_Context *ctx){
 	}
 }
 
-void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_UniformBuffer *ubo){
+void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_UniformBuffer *ubo, LAV_CommandBuffer *cbo){
 
 	vkDestroyImageView(ctx->device, ctx->depth_image_view, NULL);
 	vkDestroyImage(ctx->device, ctx->depth_image, NULL);
@@ -1070,7 +1078,7 @@ void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipe
 		vkDestroyFramebuffer(ctx->device, ctx->swapchain_frame_buffers[i], NULL);
 	}
 
-	vkFreeCommandBuffers(ctx->device, ctx->command_pool,  ctx->swapchain_images_count, ctx->command_buffers); 
+	vkFreeCommandBuffers(ctx->device, ctx->command_pool,  ctx->swapchain_images_count, cbo->command_buffers); 
 
 	vkDestroyPipeline(ctx->device, pip->graphics_pipeline, NULL);
 	vkDestroyPipelineLayout(ctx->device, layout->pipeline_layout, NULL);
@@ -1089,11 +1097,11 @@ void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipe
 
 	vkDestroyDescriptorPool(ctx->device, ctx->descriptor_pool, NULL);
 }
-void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo){
+void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo, LAV_CommandBuffer *cbo){
 
 	vkDeviceWaitIdle(ctx->device);
 
-	LAV_DestroySwapchain(ctx, layout, pip,  ubo);
+	LAV_DestroySwapchain(ctx, layout, pip,  ubo, cbo);
 
 	//Texture
 	vkDestroySampler(ctx->device, tex->texture_sampler, NULL);
@@ -1124,11 +1132,11 @@ void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeli
 	free(ctx);
 }
 
-void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo){
+void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo, LAV_CommandBuffer *cbo){
 
 	vkDeviceWaitIdle(ctx->device);
 	
-	LAV_DestroySwapchain(ctx, layout, pip,  ubo);
+	LAV_DestroySwapchain(ctx, layout, pip,  ubo, cbo);
 
 	LAV_CreateSwapchain(ctx, window);
 	LAV_CreateSwapchainImageViews(ctx);

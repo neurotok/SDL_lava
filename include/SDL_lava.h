@@ -92,7 +92,9 @@ typedef struct{
 	VkDescriptorBufferInfo ubo_info[2];
 }LAV_UniformBuffer;
 
-
+typedef struct{
+	VkCommandBuffer command_buffers[2];
+}LAV_CommandBuffer;
 
 typedef struct{
 	int window_width, window_height;
@@ -158,7 +160,7 @@ typedef struct{
 	VkDescriptorPool descriptor_pool;
 	VkDescriptorSet descriptor_sets[2];
 
-	VkCommandBuffer command_buffers[2];
+	//VkCommandBuffer command_buffers[2];
 
 	VkSemaphore image_available_semaphore[2];
 	VkSemaphore render_finished_semaphore[2];
@@ -166,6 +168,90 @@ typedef struct{
 
 }LAV_Context;
 
+
+typedef enum{
+	LAV_CMD_BEGIN_RENDER_PASS,
+	LAV_CMD_BIND_PIPELINE,
+	LAV_CMD_BIND_VERTEX_BUFFER,
+	LAV_CMD_BIND_INDEX_BUFFER,
+	LAV_CMD_BIND_DESCRIPTOR_SET,
+	LAV_CMD_DRAW,
+	LAV_CMD_DRAW_INDEXED,
+	LAV_CMD_END_RENDER_PASS
+}cmd_t;
+
+typedef struct{
+	void (*p)(VkCommandBuffer, VkPipelineBindPoint, VkPipeline);
+	VkPipelineBindPoint bind_point;
+	VkPipeline pipeline;
+}cmd_bind_pipeline_t;
+
+typedef struct {
+	void (*p)(VkCommandBuffer, uint32_t, uint32_t, const VkBuffer*, const VkDeviceSize*);
+	uint32_t first_binding;
+	uint32_t bindings_count;
+	const VkBuffer* buffers;
+    const VkDeviceSize* offsets;
+}cmd_bind_vertex_buffers_t;
+
+typedef struct{
+	void (*p)(VkCommandBuffer, VkBuffer, VkDeviceSize, VkIndexType);
+	VkBuffer buffer;
+    VkDeviceSize offset;
+    VkIndexType index_type;
+}cmd_bind_index_buffers_t;
+
+typedef struct{
+	void (*p)(VkCommandBuffer, VkPipelineBindPoint, VkPipelineLayout, uint32_t, uint32_t, const VkDescriptorSet*, uint32_t, const uint32_t*);
+	VkPipelineBindPoint  pipeline_bind_point;
+    VkPipelineLayout layout;
+    uint32_t first_set;
+    uint32_t descriptors_count;
+    const VkDescriptorSet* descriptor_sets;
+    uint32_t offset_count;
+    const uint32_t* offsets;
+}cmd_bind_descriptor_sets_t;
+
+typedef struct{
+	void (*p)(VkCommandBuffer, uint32_t, uint32_t, uint32_t, int32_t, uint32_t);
+	uint32_t index_count;
+	uint32_t instance_count;
+	uint32_t first_index;
+	int32_t vertex_offset;
+	uint32_t first_instance;
+}cmd_draw_indexed_t;
+
+typedef struct{
+	void (*p)(VkCommandBuffer, uint32_t, uint32_t, uint32_t, uint32_t);
+	uint32_t vertex_count;
+	uint32_t instance_count;
+	uint32_t first_vertex;
+	uint32_t first_instance;
+}cmd_draw_t;
+
+typedef union{
+	cmd_bind_pipeline_t bind_pipeline;
+	cmd_bind_vertex_buffers_t bind_vertex_buffers;
+	cmd_bind_index_buffers_t bind_index_buffers;
+	cmd_bind_descriptor_sets_t bind_descriptor_sets;
+	cmd_draw_indexed_t draw_indexed;
+	cmd_draw_t draw;
+}cmd_u;
+
+typedef struct{
+	cmd_t type;
+	cmd_u uni;
+}LavCommand;
+
+
+LavCommand LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline);
+LavCommand LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets);
+LavCommand LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type);
+LavCommand LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets);
+LavCommand LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
+LavCommand LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+
+LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd);
 
 LAV_PipelineLayout* LAV_CreatePipelineLayout(LAV_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]);
 
@@ -191,5 +277,7 @@ VkImageView LAV_CreateImageView(LAV_Context *ctx, VkImage image, VkFormat format
 VkCommandBuffer LAV_BeginSingleTimeCommands(LAV_Context *ctx);
 void LAV_EndSingleTimeCommands(LAV_Context *ctx, VkCommandBuffer *command_buffer);
 
-void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo);
-void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo);
+
+void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo, LAV_CommandBuffer *cbo);
+
+void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo, LAV_CommandBuffer *cbo);

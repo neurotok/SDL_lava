@@ -71,8 +71,22 @@ int main(void){
 
 	LAV_Texture *tex = LAV_CreateTexture(ctx, "../assets/images/chalet.jpg"); 
 
-
+	//Rest
 	LAV_Rest(ctx, layout, pip, ubo, tex);	
+
+	VkDeviceSize offsets[] = {0};
+
+	LavCommand commands[] = {
+		LAV_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pip->graphics_pipeline),	
+		LAV_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
+		LAV_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
+		LAV_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
+		LAV_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
+		//LAV_Draw(ctx->vertices, 1, 0, 0)
+	};
+
+	LAV_CommandBuffer *cbo = LAV_CreateCommandBuffers(ctx, NUM(commands), commands);
+
 	
 	float rotation_angle = 0.0f;	
 	float rotation_speed = 20.0f;
@@ -160,7 +174,7 @@ int main(void){
 		VkResult result = vkAcquireNextImageKHR(ctx->device, ctx->swapchain, UINT64_MAX, ctx->image_available_semaphore[current_frame], VK_NULL_HANDLE, &image_index);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			LAV_RecreateSwapchain(ctx, window, layout, pip, tex, ubo);
+			LAV_RecreateSwapchain(ctx, window, layout, pip, tex, ubo, cbo);
 			goto REDRAW;
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
@@ -171,7 +185,7 @@ int main(void){
 		submit_info.pWaitSemaphores = &ctx->image_available_semaphore[current_frame]; // wait_semaphores,
 		submit_info.pWaitDstStageMask = &(VkPipelineStageFlags){VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}; // wait_stages,
 		submit_info.commandBufferCount = 1;
-		submit_info.pCommandBuffers = &ctx->command_buffers[image_index];
+		submit_info.pCommandBuffers = &cbo->command_buffers[image_index];
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores = &ctx->render_finished_semaphore[current_frame]; // signal_semaphores
 
@@ -191,7 +205,7 @@ int main(void){
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebuffer_resized) {
 			framebuffer_resized = false;
-			LAV_RecreateSwapchain(ctx, window, layout, pip, tex, ubo);
+			LAV_RecreateSwapchain(ctx, window, layout, pip, tex, ubo, cbo);
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
 		}
@@ -200,7 +214,7 @@ int main(void){
 
 	}
 
-	LAV_DestroyContext(ctx, layout, pip, tex, ubo);
+	LAV_DestroyContext(ctx, layout, pip, tex, ubo, cbo);
 	SDL_Quit();
 	exit(EXIT_SUCCESS);
 }

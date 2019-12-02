@@ -1,7 +1,8 @@
 #pragma once
 
 #include "SDL_lava.h"
-
+/*
+ 
 typedef enum{
 	LAV_CMD_BEGIN_RENDER_PASS,
 	LAV_CMD_BIND_PIPELINE,
@@ -76,6 +77,7 @@ typedef struct{
 	cmd_u uni;
 }LavCommand;
 
+
 LavCommand LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline);
 LavCommand LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets);
 LavCommand LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type);
@@ -83,5 +85,8 @@ LavCommand LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipe
 LavCommand LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
 LavCommand LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
 
+*/
 void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, LavCommand *cmd);
-void LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd);
+
+
+//void LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd);

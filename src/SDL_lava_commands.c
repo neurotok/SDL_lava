@@ -121,14 +121,16 @@ void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descri
 	}
 }
 
-void LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd){
+LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd){
+
+	LAV_CommandBuffer *cbo = malloc(sizeof(LAV_CommandBuffer));	
 
 	VkCommandBufferAllocateInfo alloc_info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
 	alloc_info.commandPool = ctx->command_pool;
 	alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	alloc_info.commandBufferCount = ctx->swapchain_images_count;
 
-	assert(vkAllocateCommandBuffers(ctx->device, &alloc_info, ctx->command_buffers) == VK_SUCCESS);
+	assert(vkAllocateCommandBuffers(ctx->device, &alloc_info, cbo->command_buffers) == VK_SUCCESS);
 
 
 	VkClearValue clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
@@ -145,7 +147,7 @@ void LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd)
 		begin_info.flags = 0; // Optional
 		begin_info.pInheritanceInfo = NULL; // Optional
 
-		assert(vkBeginCommandBuffer(ctx->command_buffers[i], &begin_info) == VK_SUCCESS);
+		assert(vkBeginCommandBuffer(cbo->command_buffers[i], &begin_info) == VK_SUCCESS);
 
 		VkRenderPassBeginInfo render_pass_info = {.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
 		render_pass_info.renderPass = ctx->render_pass;
@@ -157,12 +159,14 @@ void LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd)
 		render_pass_info.clearValueCount = NUM(clear_values);
 		render_pass_info.pClearValues = clear_values;
 
-		vkCmdBeginRenderPass(ctx->command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(cbo->command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-		LAV_ExecuteCommands(ctx->command_buffers[i], &ctx->descriptor_sets[i], count, cmd);
+		LAV_ExecuteCommands(cbo->command_buffers[i], &ctx->descriptor_sets[i], count, cmd);
 
-		vkCmdEndRenderPass(ctx->command_buffers[i]);
-		assert(vkEndCommandBuffer(ctx->command_buffers[i]) == VK_SUCCESS);
+		vkCmdEndRenderPass(cbo->command_buffers[i]);
+		assert(vkEndCommandBuffer(cbo->command_buffers[i]) == VK_SUCCESS);
 	}
+
+	return cbo;
 };
 

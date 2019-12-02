@@ -67,8 +67,12 @@ int main(void){
 			NUM(attribute_description),	attribute_description,
 			0);
 
+	LAV_UniformBuffer *ubo = LAV_CreateUniformBuffer(ctx, sizeof(ubo_t));
 
-	LAV_Rest(ctx, layout, pip);	
+	LAV_Texture *tex = LAV_CreateTexture(ctx, "../assets/images/chalet.jpg"); 
+
+
+	LAV_Rest(ctx, layout, pip, ubo, tex);	
 	
 	float rotation_angle = 0.0f;	
 	float rotation_speed = 20.0f;
@@ -145,9 +149,9 @@ int main(void){
 		mvp.proj.Elements[1][1] *= -1.0f;
 
 		void* temp_data; // = malloc(buffer_size);
-		vkMapMemory(ctx->device, ctx->ubo->uniform_buffer_allocation[current_frame], 0, sizeof(ubo_t), 0, &temp_data);
+		vkMapMemory(ctx->device, ubo->uniform_buffer_allocation[current_frame], 0, sizeof(ubo_t), 0, &temp_data);
 		memcpy(temp_data, &mvp, sizeof(ubo_t));
-		vkUnmapMemory(ctx->device, ctx->ubo->uniform_buffer_allocation[current_frame]);
+		vkUnmapMemory(ctx->device, ubo->uniform_buffer_allocation[current_frame]);
 
 
 		vkWaitForFences(ctx->device, 1, &ctx->in_flight_fence[current_frame], VK_TRUE, UINT64_MAX);
@@ -156,7 +160,7 @@ int main(void){
 		VkResult result = vkAcquireNextImageKHR(ctx->device, ctx->swapchain, UINT64_MAX, ctx->image_available_semaphore[current_frame], VK_NULL_HANDLE, &image_index);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			LAV_RecreateSwapchain(ctx, window, layout, pip, ctx->tex, ctx->ubo);
+			LAV_RecreateSwapchain(ctx, window, layout, pip, tex, ubo);
 			goto REDRAW;
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
@@ -187,7 +191,7 @@ int main(void){
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebuffer_resized) {
 			framebuffer_resized = false;
-			LAV_RecreateSwapchain(ctx, window, layout, pip, ctx->tex, ctx->ubo);
+			LAV_RecreateSwapchain(ctx, window, layout, pip, tex, ubo);
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			printf("failed to acquire swap chain image!\n");
 		}
@@ -196,7 +200,7 @@ int main(void){
 
 	}
 
-	LAV_DestroyContext(ctx, layout, pip, ctx->tex, ctx->ubo);
+	LAV_DestroyContext(ctx, layout, pip, tex, ubo);
 	SDL_Quit();
 	exit(EXIT_SUCCESS);
 }

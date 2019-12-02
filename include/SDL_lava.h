@@ -83,12 +83,16 @@ typedef struct{
 	VkDeviceMemory texture_image_allocation;
     VkImageView texture_image_view;
     VkSampler texture_sampler;
+	VkDescriptorImageInfo image_info[2];
 }LAV_Texture;
 
 typedef struct{
 	VkBuffer uniform_buffer[2];
 	VkDeviceMemory uniform_buffer_allocation[2];
+	VkDescriptorBufferInfo ubo_info[2];
 }LAV_UniformBuffer;
+
+
 
 typedef struct{
 	int window_width, window_height;
@@ -130,7 +134,7 @@ typedef struct{
 
 
 
-	LAV_Texture *tex;
+	//LAV_Texture *tex;
 
 	/*
     VkImage texture_image;
@@ -146,7 +150,7 @@ typedef struct{
 
 	uint32_t vertices;
 	
-	LAV_UniformBuffer *ubo;
+	//LAV_UniformBuffer *ubo;
 	//VkBuffer uniform_buffer[2];
 	//VkDeviceMemory uniform_buffer_allocation[2];
 
@@ -176,7 +180,11 @@ VkVertexInputAttributeDescription LAV_CreateShaderDescriptor(uint32_t binding, u
 LAV_Pipeline* LAV_CreatePipeline(LAV_Context *ctx, LAV_PipelineLayout *layout, uint32_t shaders_count, const char *shaders_sources[], uint32_t inputs_count,  VkVertexInputBindingDescription input_description[], uint32_t attributes_count , VkVertexInputAttributeDescription attribute_description[], LAV_PipelineMask pipeline_flags);
 
 
-void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip);
+LAV_UniformBuffer* LAV_CreateUniformBuffer(LAV_Context *ctx, VkDeviceSize buffer_size);
+LAV_Texture *LAV_CreateTexture(LAV_Context *ctx, const char *path);
+
+
+void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_UniformBuffer *ubo, LAV_Texture *tex);
 
 void LAV_CreateImage(LAV_Context *ctx, VkImage *image, VkDeviceMemory *data,  uint32_t width, uint32_t height, uint32_t mip_levels, VkSampleCountFlagBits sample_count, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
 VkImageView LAV_CreateImageView(LAV_Context *ctx, VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, uint32_t mip_levels, bool swizzle);

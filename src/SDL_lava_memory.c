@@ -108,17 +108,6 @@ void LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh){
 	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);
 }
 
-void LAV_CreateUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer *ubo){
 
-	VkDeviceSize buffer_size = sizeof(ubo_t);
 	
-	for (int i = 0; i < 2; ++i) {
-			LAV_CreateBuffer(ctx,
-			&ubo->uniform_buffer[i], &ubo->uniform_buffer_allocation[i],
-			buffer_size,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	}
-}
-
 

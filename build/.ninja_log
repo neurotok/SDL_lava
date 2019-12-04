@@ -1,8 +1,0 @@
-# ninja log v5
-1	93	1575323549	src/25a6634@@..@lava@exe/SDL_lava_utils.c.o	b4ce35dd93a7ecaf
-0	961	1575323549	src/25a6634@@..@lava@exe/main.c.o	5cf6c3185a249b32
-2	1010	1575323550	src/25a6634@@..@lava@exe/SDL_lava_commands.c.o	b727d781542cde20
-1	1105	1575323550	src/25a6634@@..@lava@exe/SDL_lava_memory.c.o	b57bdacd6c76592d
-0	1200	1575323550	src/25a6634@@..@lava@exe/SDL_lava.c.o	735a05c872d13459
-2	2036	1575323551	src/25a6634@@..@lava@exe/SDL_lava_import.c.o	54bc3326f6c9ca31
-2036	2128	1575323551	lava	46a5876d118aa0f6

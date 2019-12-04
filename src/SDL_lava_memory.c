@@ -47,7 +47,7 @@ void LAV_CopyBuffer(LAV_Context *ctx, VkBuffer src_buffer, VkBuffer dst_buffer, 
         LAV_EndSingleTimeCommands(ctx, &coppy_buffer);
     }
 
-void LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh){
+LAV_VertexBuffer* LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh){
 
 	VkDeviceSize buffer_size = mesh->vertices_size;
 
@@ -66,19 +66,23 @@ void LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh){
 	vkUnmapMemory(ctx->device, staging_buffer_allocation);
 	//free(temp_data);
 
+	LAV_VertexBuffer *vbo = malloc(sizeof(LAV_VertexBuffer));
+
 	LAV_CreateBuffer(ctx,
-			&ctx->vertex_buffer, &ctx->vertex_buffer_allocation,
+			&vbo->vertex_buffer, &vbo->vertex_buffer_allocation,
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	LAV_CopyBuffer(ctx, staging_buffer, ctx->vertex_buffer, buffer_size);
+	LAV_CopyBuffer(ctx, staging_buffer, vbo->vertex_buffer, buffer_size);
 
 	vkDestroyBuffer(ctx->device, staging_buffer, NULL);
 	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);
+
+	return vbo;
 }
 
-void LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh){
+LAV_IndexBuffer* LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh){
 
 	VkDeviceSize buffer_size = mesh->indices_size;
 
@@ -96,16 +100,22 @@ void LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh){
 	memcpy(temp_data, mesh->indices, buffer_size);
 	vkUnmapMemory(ctx->device, staging_buffer_allocation);
 
+
+	LAV_IndexBuffer *ibo = malloc(sizeof(LAV_IndexBuffer));
+
 	LAV_CreateBuffer(ctx,
-			&ctx->index_buffer, &ctx->index_buffer_allocation,
+			&ibo->index_buffer, &ibo->index_buffer_allocation,
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	LAV_CopyBuffer(ctx, staging_buffer, ctx->index_buffer, buffer_size);
+	LAV_CopyBuffer(ctx, staging_buffer, ibo->index_buffer, buffer_size);
+
 
 	vkDestroyBuffer(ctx->device, staging_buffer, NULL);
 	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);
+
+	return ibo;
 }
 
 

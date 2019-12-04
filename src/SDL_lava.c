@@ -185,7 +185,8 @@ void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, L
 	
 
 
-	LAV_LoadModel(ctx, "../assets/models/chalet.obj");
+	//LAV_LoadModel(ctx, "../assets/models/chalet.obj");
+	
 	//VK_LoadModel(ctx, "../assets/models/Duck.obj`");
 	/*
 	ctx->ubo = malloc(sizeof(LAV_UniformBuffer));
@@ -582,25 +583,10 @@ VkPushConstantRange LAV_CreatePushCnstant(VkShaderStageFlags stage_flags, uint32
 		
 	return push_constant;
 }
-/*
-VkDescriptorSetLayout vk_createdescriptionsetlayout(LAV_Context *ctx, uint32_t count, VkDescriptorSetLayoutBinding bindings_description[]){
 
-	VkDescriptorSetLayout bindings;
-
-	VkDescriptorSetLayoutCreateInfo descriptor_layout_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-	descriptor_layout_info.bindingCount = count;
-	descriptor_layout_info.pBindings = bindings_description;
-
-	assert(vkCreateDescriptorSetLayout(ctx->device, &descriptor_layout_info, NULL, &bindings) == VK_SUCCESS);
-
-	return bindings;
-}
-*/
 LAV_PipelineLayout* LAV_CreatePipelineLayout(LAV_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]){
 
 	LAV_PipelineLayout *layout = malloc(sizeof(LAV_PipelineLayout));
-
-	//layout.descriptor_layout = LAV_CreateDescriptionSetLayout(ctx, bindings_count, bindings_description);
 
 	VkDescriptorSetLayoutCreateInfo descriptor_layout_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
 	descriptor_layout_info.bindingCount = bindings_count;
@@ -1097,7 +1083,7 @@ void LAV_DestroySwapchain(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipe
 
 	vkDestroyDescriptorPool(ctx->device, ctx->descriptor_pool, NULL);
 }
-void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo, LAV_CommandBuffer *cbo){
+void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo, LAV_VertexBuffer *vbo, LAV_IndexBuffer *ibo, LAV_CommandBuffer *cbo){
 
 	vkDeviceWaitIdle(ctx->device);
 
@@ -1111,11 +1097,11 @@ void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeli
 
 	vkDestroyDescriptorSetLayout(ctx->device, layout->descriptor_layout, NULL);
 
-	vkDestroyBuffer(ctx->device, ctx->index_buffer, NULL);
-	vkFreeMemory(ctx->device, ctx->index_buffer_allocation, NULL);
+	vkDestroyBuffer(ctx->device, ibo->index_buffer, NULL);
+	vkFreeMemory(ctx->device, ibo->index_buffer_allocation, NULL);
 
-	vkDestroyBuffer(ctx->device, ctx->vertex_buffer, NULL);
-	vkFreeMemory(ctx->device, ctx->vertex_buffer_allocation, NULL);
+	vkDestroyBuffer(ctx->device, vbo->vertex_buffer, NULL);
+	vkFreeMemory(ctx->device, vbo->vertex_buffer_allocation, NULL);
 
 	for (size_t i = 0; i < ctx->swapchain_images_count; i++) {
 		vkDestroySemaphore(ctx->device, ctx->render_finished_semaphore[i], NULL);

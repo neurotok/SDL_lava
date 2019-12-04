@@ -93,6 +93,17 @@ typedef struct{
 }LAV_UniformBuffer;
 
 typedef struct{
+	VkBuffer vertex_buffer;
+	VkDeviceMemory vertex_buffer_allocation;
+}LAV_VertexBuffer;
+
+typedef struct{
+	VkBuffer index_buffer;
+	VkDeviceMemory index_buffer_allocation;
+	uint32_t indices;
+}LAV_IndexBuffer;
+
+typedef struct{
 	VkCommandBuffer command_buffers[2];
 }LAV_CommandBuffer;
 
@@ -251,6 +262,14 @@ LavCommand LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipe
 LavCommand LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
 LavCommand LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
 
+
+void LAV_ParseOBJ(const char *path, mesh_t *mesh);
+LAV_IndexBuffer* LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh);
+LAV_VertexBuffer* LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh);
+
+
+
+
 LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd);
 
 LAV_PipelineLayout* LAV_CreatePipelineLayout(LAV_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]);
@@ -280,4 +299,6 @@ void LAV_EndSingleTimeCommands(LAV_Context *ctx, VkCommandBuffer *command_buffer
 
 void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo, LAV_CommandBuffer *cbo);
 
-void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo, LAV_CommandBuffer *cbo);
+
+
+void LAV_DestroyContext(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_Texture *tex, LAV_UniformBuffer *ubo, LAV_VertexBuffer *vbo, LAV_IndexBuffer *ibo, LAV_CommandBuffer *cbo);

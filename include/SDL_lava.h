@@ -108,6 +108,10 @@ typedef struct{
 }LAV_CommandBuffer;
 
 typedef struct{
+	VkDescriptorSet descriptor_sets[2];
+}LAV_DescriptorSet;
+
+typedef struct{
 	int window_width, window_height;
 	VkInstance instance;
 	VkSurfaceKHR surface;
@@ -139,6 +143,8 @@ typedef struct{
 	//LAV_Image
 	uint32_t mips_level;
 
+	VkDescriptorPool descriptor_pool;
+
 	//LAV_PipelineLayout *layout;
 	//LAV_Pipeline *pip;
 	//VkDescriptorSetLayout descriptor_layout;
@@ -156,20 +162,19 @@ typedef struct{
     VkSampler texture_sampler;
 	*/
 
-	VkBuffer vertex_buffer;
-	VkDeviceMemory vertex_buffer_allocation;
-	VkBuffer index_buffer;
-	VkDeviceMemory index_buffer_allocation;
+	//VkBuffer vertex_buffer;
+	//VkDeviceMemory vertex_buffer_allocation;
+	//VkBuffer index_buffer;
+	//VkDeviceMemory index_buffer_allocation;
 
-	uint32_t vertices;
+	//uint32_t vertices;
 	
 	//LAV_UniformBuffer *ubo;
 	//VkBuffer uniform_buffer[2];
 	//VkDeviceMemory uniform_buffer_allocation[2];
 
 
-	VkDescriptorPool descriptor_pool;
-	VkDescriptorSet descriptor_sets[2];
+	//VkDescriptorSet descriptor_sets[2];
 
 	//VkCommandBuffer command_buffers[2];
 
@@ -269,8 +274,11 @@ LAV_VertexBuffer* LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh);
 
 
 
+VkWriteDescriptorSet LAV_WriteUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer *ubo, uint32_t destination_bindding);
+VkWriteDescriptorSet LAV_WriteCombinedImageSampler(LAV_Context *ctx, LAV_Texture *tex, uint32_t destination_bindding);
+LAV_DescriptorSet* LAV_CreateDescriptorSet(LAV_Context *ctx, LAV_PipelineLayout *layout, uint32_t count, VkWriteDescriptorSet descriptors[]);
 
-LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd);
+LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, LAV_DescriptorSet *desc, uint32_t count, LavCommand *cmd);
 
 LAV_PipelineLayout* LAV_CreatePipelineLayout(LAV_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]);
 

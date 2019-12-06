@@ -111,6 +111,8 @@ LAV_IndexBuffer* LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh){
 
 	LAV_CopyBuffer(ctx, staging_buffer, ibo->index_buffer, buffer_size);
 
+	//TODO
+	ibo->indices = mesh->vertices_size / sizeof(vertex_t);
 
 	vkDestroyBuffer(ctx->device, staging_buffer, NULL);
 	vkFreeMemory(ctx->device, staging_buffer_allocation, NULL);

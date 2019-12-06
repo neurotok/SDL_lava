@@ -11,7 +11,6 @@
 
 
 #define HANDMADE_MATH_IMPLEMENTATION
-//#define HANDMADE_MATH_DEPTH_ZERO_TO_ONE
 #include "HandmadeMath.h"
 
 #define NUM(a) (sizeof(a)/sizeof(a[0]))
@@ -42,33 +41,10 @@ int main(void){
 			NUM(device_extensions),	device_extensions,
 			LAV_CTX_DEBUG | LAV_CTX_MIPMAPS | LAV_CTX_MULTISAMPLING);
 
-	LAV_UniformBuffer *ubo = LAV_CreateUniformBuffer(ctx, sizeof(ubo_t));
-	LAV_Texture *tex = LAV_CreateTexture(ctx, "../assets/images/chalet.jpg"); 
-
-
-
-
 	VkDescriptorSetLayoutBinding description_set_bindigns[] = {
 		LAV_CreateBindingDescriptor(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT),
 		LAV_CreateBindingDescriptor(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 	};
-
-	/*	
-	lav_descriptor descriptors[] {
-		LAV_SetUniformBuffer(ubo, 0);
-		LAV_SetCombinedImageSapler(tex, 1);
-	}
-
-	lav_vertex_input vert[] {
-		LAV_
-	}
-
-	lav_atributes atributes[]
-	lav_pusch_constants[]
-	lav_indices[]
-
-
-	*/
 
 	LAV_PipelineLayout *layout = LAV_CreatePipelineLayout(ctx,
 			NUM(description_set_bindigns), description_set_bindigns,
@@ -92,31 +68,37 @@ int main(void){
 			0);
 
 
-	//Rest
-	LAV_Rest(ctx, layout, pip, ubo, tex);	
-
 	mesh_t model;
 	model.vertices = NULL;
 	model.indices = NULL;
+
 	LAV_ParseOBJ("../assets/models/chalet.obj", &model);
 
 	LAV_VertexBuffer *vbo = LAV_CreateVertexBuffer(ctx, &model);
 	LAV_IndexBuffer *ibo = LAV_CreateIndexBuffer(ctx, &model);
-	//TODO
-	ibo->indices = model.vertices_size / sizeof(vertex_t);
+
+	LAV_UniformBuffer *ubo = LAV_CreateUniformBuffer(ctx, sizeof(ubo_t));
+	LAV_Texture *tex = LAV_CreateTexture(ctx, "../assets/images/chalet.jpg"); 
+
+	VkWriteDescriptorSet descriptor_write[] = {
+		LAV_WriteUniformBuffer(ctx, ubo,  0),
+		LAV_WriteCombinedImageSampler(ctx, tex, 1)
+	};
+
+	LAV_DescriptorSet *desc = LAV_CreateDescriptorSet(ctx, layout, NUM(descriptor_write), descriptor_write);
 
 	VkDeviceSize offsets[] = {0};
 
 	LavCommand commands[] = {
 		LAV_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pip->graphics_pipeline),	
 		LAV_BindVertexBuffer(0,1, &vbo->vertex_buffer, offsets),
-		LAV_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
+		LAV_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, layout->pipeline_layout, 0, 1, desc->descriptor_sets, 0, NULL),
 		LAV_Draw(ibo->indices, 1, 0, 0)
 		//LAV_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
 		//LAV_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
 	};
 
-	LAV_CommandBuffer *cbo = LAV_CreateCommandBuffers(ctx, NUM(commands), commands);
+	LAV_CommandBuffer *cbo = LAV_CreateCommandBuffers(ctx, desc, NUM(commands), commands);
 
 	
 	float rotation_angle = 0.0f;	

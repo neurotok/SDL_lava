@@ -467,7 +467,7 @@ void LAV_DestroyMesh(mesh_t *mesh){
 	free(mesh->indices);
 }
 
-
+/*
 void LAV_LoadModel(LAV_Context *ctx, const char* path)
 {
 	if (strstr(path, ".obj")){
@@ -494,5 +494,6 @@ void LAV_LoadModel(LAV_Context *ctx, const char* path)
 		LAV_DestroyMesh(&model);
 	};
 }
+*/
 
 

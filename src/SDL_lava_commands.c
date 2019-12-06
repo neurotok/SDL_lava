@@ -121,7 +121,7 @@ void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descri
 	}
 }
 
-LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd){
+LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, LAV_DescriptorSet *desc, uint32_t count, LavCommand *cmd){
 
 	LAV_CommandBuffer *cbo = malloc(sizeof(LAV_CommandBuffer));	
 
@@ -161,7 +161,7 @@ LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, La
 
 		vkCmdBeginRenderPass(cbo->command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-		LAV_ExecuteCommands(cbo->command_buffers[i], &ctx->descriptor_sets[i], count, cmd);
+		LAV_ExecuteCommands(cbo->command_buffers[i], &desc->descriptor_sets[i], count, cmd);
 
 		vkCmdEndRenderPass(cbo->command_buffers[i]);
 		assert(vkEndCommandBuffer(cbo->command_buffers[i]) == VK_SUCCESS);

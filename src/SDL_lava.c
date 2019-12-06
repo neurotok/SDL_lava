@@ -37,7 +37,6 @@ void LAV_CreateFramebuffers(LAV_Context *ctx);
 void LAV_CreateDescriptionPool(LAV_Context *ctx);
 
 
-void LAV_CreateDescriptorSets(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo);
 
 void LAV_CreateSyncObjects(LAV_Context *ctx);
 
@@ -58,17 +57,12 @@ LAV_Context* LAV_CreateContext(SDL_Window *window, const char *window_title, uin
 	ctx->depth_image_format = VK_NULL_HANDLE;
 	ctx->render_pass = VK_NULL_HANDLE;
 
-	//ctx->layout->descriptor_layout = VK_NULL_HANDLE;
-	//ctx->layout->pipeline_layout = VK_NULL_HANDLE;
-
-	//ctx->pip->graphics_pipeline = VK_NULL_HANDLE;
 	ctx->command_pool = VK_NULL_HANDLE;
 	ctx->mips_max_level = 0.0;
 	ctx->device_queue = VK_NULL_HANDLE;
 	ctx->gen_mips = true;
 	ctx->descriptor_pool = VK_NULL_HANDLE;
 
-	//LAV_CreateContext
 	LAV_CreateInstance(window, ctx, window_title, instance_layers_count, instance_layers, context_mask);
 	LAV_CreateSurface(ctx, window);
 	LAV_GetPhisicalDevice(ctx);
@@ -87,60 +81,7 @@ LAV_Context* LAV_CreateContext(SDL_Window *window, const char *window_title, uin
 
 	LAV_CreateDescriptionPool(ctx);
 	LAV_CreateSyncObjects(ctx);
-	/*
-	const char *shader_sources[] = { "../assets/shaders/vert.spv",  "../assets/shaders/frag.spv"};
 
-	VkVertexInputAttributeDescription attribute_description[] = {// = {position_attribute_description, textcoord_attribute_description};
-		LAV_CreateShaderDescriptor(0,0, VK_FORMAT_R32G32B32_SFLOAT, 0),
-		LAV_CreateShaderDescriptor(0,1, VK_FORMAT_R32G32_SFLOAT, 3 * sizeof(float))
-	};
-
-	ctx->pip->graphics_pipeline = LAV_CreateGraphicsPipeline(ctx,
-			NUM(shader_sources),
-			shader_sources,
-			NUM(attribute_description),
-			attribute_description,
-			pipeline_creation_mask);
-	*/
-
-	
-	/*
-
-	LAV_CreateGraphicsPipeline(ctx);
-
-	
-	//LAV_CreateCommandPool(ctx);
-	//LAV_CreateColorResource(ctx);
-	//LAV_CreateDepthResource(ctx);
-	//LAV_CreateFramebuffers(ctx);
-	
-
-
-	LAV_CreateTextureImage(ctx, "../assets/images/chalet.jpg");
-	//LAV_CreateTextureImage(ctx, "../assets/models/DuckCM.png");
-	LAV_CreateTextureImageView(ctx);
-	LAV_CreateTextureSampler(ctx);
-	VK_LoadModel(ctx, "../assets/models/chalet.obj");
-	//VK_LoadModel(ctx, "../assets/models/Duck.obj`");
-	LAV_CreateUniformBuffer(ctx);
-
-	LAV_CreateDescriptionPool(ctx);
-	LAV_CreateDescriptorSets(ctx);
-
-	VkDeviceSize offsets[] = {0};
-
-	command_t commands[] = {
-		LAV_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->pip->graphics_pipeline),	
-		LAV_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
-		LAV_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
-		LAV_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
-		LAV_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
-		//LAV_Draw(ctx->vertices, 1, 0, 0)
-	};
-
-	LAV_CreateCommandBuffers(ctx, NUM(commands), commands);
-	LAV_CreateSyncObjects(ctx);
-	*/
 	return ctx;
 }
 
@@ -161,63 +102,6 @@ LAV_Texture *LAV_CreateTexture(LAV_Context *ctx, const char *path){
 
 	return tex;
 
-}
-
-void LAV_Rest(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Pipeline *pip, LAV_UniformBuffer *ubo, LAV_Texture *tex){
-
-
-
-
-	//LAV_CreateGraphicsPipeline(ctx, layout);
-
-	
-	//LAV_CreateCommandPool(ctx);
-	//LAV_CreateColorResource(ctx);
-	//LAV_CreateDepthResource(ctx);
-	//LAV_CreateFramebuffers(ctx);
-	
-	/*
-	ctx->tex = malloc(sizeof(LAV_Texture));
-	LAV_CreateTextureImage(ctx, ctx->tex, "../assets/images/chalet.jpg");
-	LAV_CreateTextureImageView(ctx, ctx->tex);
-	LAV_CreateTextureSampler(ctx, ctx->tex);
-	*/
-	
-
-
-	//LAV_LoadModel(ctx, "../assets/models/chalet.obj");
-	
-	//VK_LoadModel(ctx, "../assets/models/Duck.obj`");
-	/*
-	ctx->ubo = malloc(sizeof(LAV_UniformBuffer));
-	LAV_CreateUniformBuffer(ctx, ctx->ubo);
-	*/
-
-	//LAV_CreateDescriptionPool(ctx);
-	/*
-	LavDescriptors descriptors[] = {
-		LAV_WriteUniformBuffer
-		LAV_Write 
-	}
-	*/
-	LAV_CreateDescriptorSets(ctx, layout, tex, ubo);
-
-	/*
-
-	VkDeviceSize offsets[] = {0};
-
-	LavCommand commands[] = {
-		LAV_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pip->graphics_pipeline),	
-		LAV_BindVertexBuffer(0,1, &ctx->vertex_buffer, offsets),
-		LAV_BindIndexBuffer(ctx->index_buffer, 0, VK_INDEX_TYPE_UINT32),
-		LAV_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, layout->pipeline_layout, 0, 1, ctx->descriptor_sets, 0, NULL),
-		LAV_DrawIndexed(ctx->vertices, 1, 0, 0, 0)
-		//LAV_Draw(ctx->vertices, 1, 0, 0)
-	};
-
-	LAV_CreateCommandBuffers(ctx, NUM(commands), commands);
-	*/
-	//LAV_CreateSyncObjects(ctx);
 }
 
 void LAV_CreateInstance(SDL_Window *window, LAV_Context *ctx, const char *window_title, uint32_t instance_layers_count, const char* instance_layers[], LAV_ContextMask context_mask){
@@ -984,8 +868,35 @@ void LAV_CreateDescriptionPool(LAV_Context *ctx){
 	assert(vkCreateDescriptorPool(ctx->device, &descriptor_pool_info, NULL, &ctx->descriptor_pool) == VK_SUCCESS);
 }
 
+VkWriteDescriptorSet LAV_WriteUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer *ubo, uint32_t destination_bindding){
 
-void LAV_CreateDescriptorSets(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_Texture *tex, LAV_UniformBuffer *ubo){
+	VkWriteDescriptorSet ubo_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+	//ubo_write.dstSet = destination_set;
+	ubo_write.dstBinding = destination_bindding;
+	ubo_write.dstArrayElement = 0;
+	ubo_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	ubo_write.descriptorCount = 1;
+	ubo_write.pBufferInfo = ubo->ubo_info;
+	ubo_write.pImageInfo = NULL; // Optional
+	ubo_write.pTexelBufferView = NULL; // Optional
+	
+	return ubo_write;
+}
+
+VkWriteDescriptorSet LAV_WriteCombinedImageSampler(LAV_Context *ctx, LAV_Texture *tex, uint32_t destination_bindding){
+
+	VkWriteDescriptorSet image_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+	//image_write.dstSet = destination_set;
+	image_write.dstBinding = destination_bindding;
+	image_write.dstArrayElement = 0;
+	image_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	image_write.descriptorCount = 1;
+	image_write.pImageInfo = tex->image_info;
+
+	return image_write;
+}
+
+LAV_DescriptorSet* LAV_CreateDescriptorSet(LAV_Context *ctx, LAV_PipelineLayout *layout, uint32_t count, VkWriteDescriptorSet descriptors[]){
 
 	VkDescriptorSetLayout descriptor_sets_layout[ctx->swapchain_images_count];
 
@@ -993,47 +904,25 @@ void LAV_CreateDescriptorSets(LAV_Context *ctx, LAV_PipelineLayout *layout, LAV_
 		descriptor_sets_layout[i] = layout->descriptor_layout;
 	}
 
+	LAV_DescriptorSet *desc = malloc(sizeof(LAV_DescriptorSet));
+
 	VkDescriptorSetAllocateInfo descriptor_alloc_info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
 	descriptor_alloc_info.descriptorPool = ctx->descriptor_pool,
 	descriptor_alloc_info.descriptorSetCount = ctx->swapchain_images_count,
 	descriptor_alloc_info.pSetLayouts = descriptor_sets_layout;
 
-	assert(vkAllocateDescriptorSets(ctx->device, &descriptor_alloc_info, ctx->descriptor_sets) == VK_SUCCESS);
+	assert(vkAllocateDescriptorSets(ctx->device, &descriptor_alloc_info, desc->descriptor_sets) == VK_SUCCESS);
 
-	for (int i = 0; i < ctx->swapchain_images_count; ++i) {
-		/*
-		VkDescriptorBufferInfo ubo_info = {0};
-		ubo_info.buffer = ubo->uniform_buffer[i];
-		ubo_info.offset = 0;
-		ubo_info.range = sizeof(ubo_t);
-		*/
-		VkWriteDescriptorSet ubo_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
-		ubo_write.dstSet = ctx->descriptor_sets[i];
-		ubo_write.dstBinding = 0;
-		ubo_write.dstArrayElement = 0;
-		ubo_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		ubo_write.descriptorCount = 1;
-		ubo_write.pBufferInfo = ubo->ubo_info;
-		ubo_write.pImageInfo = NULL; // Optional
-		ubo_write.pTexelBufferView = NULL; // Optional
-		/*
-		VkDescriptorImageInfo image_info = {0};
-		image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		image_info.imageView = ctx->tex->texture_image_view;
-		image_info.sampler = tex->texture_sampler;
-		*/
-		VkWriteDescriptorSet image_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
-		image_write.dstSet = ctx->descriptor_sets[i];
-		image_write.dstBinding = 1;
-		image_write.dstArrayElement = 0;
-		image_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		image_write.descriptorCount = 1;
-		image_write.pImageInfo = tex->image_info;
+	for (int i = 0; i < 2; ++i) {
 
-		VkWriteDescriptorSet descriptor_write[] = {ubo_write, image_write};
+		for (int j = 0; j < count; ++j) {
+			descriptors[j].dstSet = desc->descriptor_sets[i];
+		}
+	
+		vkUpdateDescriptorSets(ctx->device, count, descriptors, 0, NULL);
 
-		vkUpdateDescriptorSets(ctx->device, NUM(descriptor_write), descriptor_write, 0, NULL);
 	}
+	return desc;
 }
 
 void LAV_CreateSyncObjects(LAV_Context *ctx){
@@ -1133,7 +1022,7 @@ void LAV_RecreateSwapchain(LAV_Context *ctx, SDL_Window *window, LAV_PipelineLay
 	LAV_CreateFramebuffers(ctx);
 	//LAV_CreateUniformBuffer(ctx, ubo);
 	LAV_CreateDescriptionPool(ctx);
-	LAV_CreateDescriptorSets(ctx, layout, tex, ubo);
+	//LAV_CreateDescriptorSets(ctx, layout, tex, ubo);
 	//LAV_CreateCommandBuffers(ctx);
 }
 

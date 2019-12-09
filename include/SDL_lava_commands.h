@@ -75,18 +75,18 @@ typedef union{
 typedef struct{
 	cmd_t type;
 	cmd_u uni;
-}LavCommand;
+}lav_command;
 
 
-LavCommand LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline);
-LavCommand LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets);
-LavCommand LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type);
-LavCommand LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets);
-LavCommand LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
-LavCommand LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+lav_command LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline);
+lav_command LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets);
+lav_command LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type);
+lav_command LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets);
+lav_command LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
+lav_command LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
 
 */
-void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, LavCommand *cmd);
+void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, lav_command *cmd);
 
 
-//void LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, LavCommand *cmd);
+//void LAV_CreateCommandBuffers(LAV_Context *ctx, uint32_t count, lav_command *cmd);

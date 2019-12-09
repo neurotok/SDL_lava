@@ -60,7 +60,7 @@ typedef struct{
 	uint32_t *indices;
 	size_t vertices_size;
 	size_t indices_size;
-}mesh_t;
+}lav_mesh;
 
 typedef struct ubo_t {
 	alignas(16) hmm_mat4 model;
@@ -257,28 +257,29 @@ typedef union{
 typedef struct{
 	cmd_t type;
 	cmd_u uni;
-}LavCommand;
+}lav_command;
 
 
-LavCommand LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline);
-LavCommand LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets);
-LavCommand LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type);
-LavCommand LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets);
-LavCommand LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
-LavCommand LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+lav_command LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline);
+lav_command LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets);
+lav_command LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type);
+lav_command LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets);
+lav_command LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance);
+lav_command LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
 
 
-void LAV_ParseOBJ(const char *path, mesh_t *mesh);
-LAV_IndexBuffer* LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh);
-LAV_VertexBuffer* LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh);
+void LAV_ParseOBJ(const char *path, lav_mesh *mesh);
+LAV_IndexBuffer* LAV_CreateIndexBuffer(LAV_Context *ctx, lav_mesh *mesh);
+LAV_VertexBuffer* LAV_CreateVertexBuffer(LAV_Context *ctx, lav_mesh *mesh);
 
 
 
-VkWriteDescriptorSet LAV_WriteUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer *ubo, uint32_t destination_bindding);
-VkWriteDescriptorSet LAV_WriteCombinedImageSampler(LAV_Context *ctx, LAV_Texture *tex, uint32_t destination_bindding);
+VkWriteDescriptorSet LAV_WriteUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer *ubo, uint32_t destination_bindding, uint32_t count);
+VkWriteDescriptorSet LAV_WriteCombinedImageSampler(LAV_Context *ctx, LAV_Texture *tex, uint32_t destination_bindding, uint32_t count);
+
 LAV_DescriptorSet* LAV_CreateDescriptorSet(LAV_Context *ctx, LAV_PipelineLayout *layout, uint32_t count, VkWriteDescriptorSet descriptors[]);
 
-LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, LAV_DescriptorSet *desc, uint32_t count, LavCommand *cmd);
+LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, LAV_DescriptorSet *desc, uint32_t count, lav_command *cmd);
 
 LAV_PipelineLayout* LAV_CreatePipelineLayout(LAV_Context *ctx, uint32_t bindings_count, VkDescriptorSetLayoutBinding bindings_description[], uint32_t push_constants_count, const VkPushConstantRange push_constants[]);
 

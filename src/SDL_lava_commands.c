@@ -2,9 +2,9 @@
 
 #define NUM(a) (sizeof(a)/sizeof(a[0]))
 
-LavCommand LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline){
+lav_command LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline){
 	
-	LavCommand cmd;
+	lav_command cmd;
 
 	cmd.type = LAV_CMD_BIND_PIPELINE;
 
@@ -15,9 +15,9 @@ LavCommand LAV_BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline)
 	return cmd;
 }
 
-LavCommand LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets){
+lav_command LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count, const VkBuffer* buffers, const VkDeviceSize* offsets){
 
-	LavCommand cmd;
+	lav_command cmd;
 
 	cmd.type = LAV_CMD_BIND_VERTEX_BUFFER;
 
@@ -30,9 +30,9 @@ LavCommand LAV_BindVertexBuffer(uint32_t first_binding, uint32_t bindings_count,
 	return cmd;
 }
 
-LavCommand LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type){
+lav_command LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type){
 	
-	LavCommand cmd;
+	lav_command cmd;
 
 	cmd.type = LAV_CMD_BIND_INDEX_BUFFER;
 
@@ -44,9 +44,9 @@ LavCommand LAV_BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType
 	return cmd;
 }
 
-LavCommand LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets){
+lav_command LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipelineLayout layout, uint32_t first_set, uint32_t descriptors_count, const VkDescriptorSet* descriptor_sets, uint32_t offset_count, const uint32_t* offsets){
 	
-	LavCommand cmd;
+	lav_command cmd;
 
 	cmd.type = LAV_CMD_BIND_DESCRIPTOR_SET;
 
@@ -62,9 +62,9 @@ LavCommand LAV_BindDescriptors(VkPipelineBindPoint  pipeline_bind_point,  VkPipe
 	return cmd;
 }
 
-LavCommand LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance){
+lav_command LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32_t first_index, int32_t vertex_offset, uint32_t first_instance){
 
-	LavCommand cmd;
+	lav_command cmd;
 
 	cmd.type = LAV_CMD_DRAW_INDEXED;
 
@@ -78,9 +78,9 @@ LavCommand LAV_DrawIndexed(uint32_t index_count, uint32_t instance_count,	uint32
 	return cmd; 
 }
 
-LavCommand LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance){
+lav_command LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance){
 
-	LavCommand cmd;
+	lav_command cmd;
 
 	cmd.type =LAV_CMD_DRAW;
 
@@ -93,7 +93,7 @@ LavCommand LAV_Draw(uint32_t vertex_count, uint32_t instance_count, uint32_t fir
 	return cmd;
 }
 
-void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, LavCommand *cmd){
+void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descriptor_sets, uint32_t count, lav_command *cmd){
 
 	for (int i = 0; i < count; ++i) {
 		switch (cmd[i].type) {
@@ -121,7 +121,7 @@ void LAV_ExecuteCommands(VkCommandBuffer command_buffer, VkDescriptorSet *descri
 	}
 }
 
-LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, LAV_DescriptorSet *desc, uint32_t count, LavCommand *cmd){
+LAV_CommandBuffer* LAV_CreateCommandBuffers(LAV_Context *ctx, LAV_DescriptorSet *desc, uint32_t count, lav_command *cmd){
 
 	LAV_CommandBuffer *cbo = malloc(sizeof(LAV_CommandBuffer));	
 

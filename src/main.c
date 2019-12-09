@@ -68,7 +68,7 @@ int main(void){
 			0);
 
 
-	mesh_t model;
+	lav_mesh model;
 	model.vertices = NULL;
 	model.indices = NULL;
 
@@ -81,15 +81,15 @@ int main(void){
 	LAV_Texture *tex = LAV_CreateTexture(ctx, "../assets/images/chalet.jpg"); 
 
 	VkWriteDescriptorSet descriptor_write[] = {
-		LAV_WriteUniformBuffer(ctx, ubo,  0),
-		LAV_WriteCombinedImageSampler(ctx, tex, 1)
+		LAV_WriteUniformBuffer(ctx, ubo,  0, 1),
+		LAV_WriteCombinedImageSampler(ctx, tex, 1, 1)
 	};
 
 	LAV_DescriptorSet *desc = LAV_CreateDescriptorSet(ctx, layout, NUM(descriptor_write), descriptor_write);
 
 	VkDeviceSize offsets[] = {0};
 
-	LavCommand commands[] = {
+	lav_command commands[] = {
 		LAV_BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pip->graphics_pipeline),	
 		LAV_BindVertexBuffer(0,1, &vbo->vertex_buffer, offsets),
 		LAV_BindDescriptors(VK_PIPELINE_BIND_POINT_GRAPHICS, layout->pipeline_layout, 0, 1, desc->descriptor_sets, 0, NULL),

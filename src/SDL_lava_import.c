@@ -278,7 +278,7 @@ void LAV_CreateTextureSampler(LAV_Context *ctx, LAV_Texture *tex){
 	assert(vkCreateSampler(ctx->device, &sampler_info, NULL, &tex->texture_sampler) == VK_SUCCESS);
 }
 
-void LAV_ParseOBJ(const char *path, mesh_t *mesh){
+void LAV_ParseOBJ(const char *path, lav_mesh *mesh){
 
 	fastObjMesh* obj = fast_obj_read(path);
 	if (!obj){
@@ -342,7 +342,7 @@ cgltf_accessor* LAV_GetAccessor(const cgltf_attribute* attributes, size_t attrib
 	return 0;
 }
 
-void LAV_ParseGLTF(const char *path, mesh_t *mesh){
+void LAV_ParseGLTF(const char *path, lav_mesh *mesh){
 
 	cgltf_options options = {0};
 	cgltf_data* data = 0;
@@ -462,7 +462,7 @@ void LAV_ParseGLTF(const char *path, mesh_t *mesh){
 	cgltf_free(data);
 }
 
-void LAV_DestroyMesh(mesh_t *mesh){
+void LAV_DestroyMesh(lav_mesh *mesh){
 	free(mesh->vertices);
 	free(mesh->indices);
 }
@@ -471,7 +471,7 @@ void LAV_DestroyMesh(mesh_t *mesh){
 void LAV_LoadModel(LAV_Context *ctx, const char* path)
 {
 	if (strstr(path, ".obj")){
-		mesh_t model;
+		lav_mesh model;
 		model.vertices = NULL;
 		model.indices = NULL;
 		LAV_ParseOBJ(path, &model);
@@ -484,7 +484,7 @@ void LAV_LoadModel(LAV_Context *ctx, const char* path)
 	};
 
 	if (strstr(path, ".gltf") || strstr(path, ".glb")){
-		mesh_t model;
+		lav_mesh model;
 		model.vertices = NULL;
 		model.indices = NULL;
 		LAV_ParseGLTF(path, &model);

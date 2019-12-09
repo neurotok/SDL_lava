@@ -47,7 +47,7 @@ void LAV_CopyBuffer(LAV_Context *ctx, VkBuffer src_buffer, VkBuffer dst_buffer, 
         LAV_EndSingleTimeCommands(ctx, &coppy_buffer);
     }
 
-LAV_VertexBuffer* LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh){
+LAV_VertexBuffer* LAV_CreateVertexBuffer(LAV_Context *ctx, lav_mesh *mesh){
 
 	VkDeviceSize buffer_size = mesh->vertices_size;
 
@@ -82,7 +82,7 @@ LAV_VertexBuffer* LAV_CreateVertexBuffer(LAV_Context *ctx, mesh_t *mesh){
 	return vbo;
 }
 
-LAV_IndexBuffer* LAV_CreateIndexBuffer(LAV_Context *ctx, mesh_t *mesh){
+LAV_IndexBuffer* LAV_CreateIndexBuffer(LAV_Context *ctx, lav_mesh *mesh){
 
 	VkDeviceSize buffer_size = mesh->indices_size;
 

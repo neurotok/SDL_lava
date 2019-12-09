@@ -868,14 +868,14 @@ void LAV_CreateDescriptionPool(LAV_Context *ctx){
 	assert(vkCreateDescriptorPool(ctx->device, &descriptor_pool_info, NULL, &ctx->descriptor_pool) == VK_SUCCESS);
 }
 
-VkWriteDescriptorSet LAV_WriteUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer *ubo, uint32_t destination_bindding){
+VkWriteDescriptorSet LAV_WriteUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer *ubo, uint32_t destination_bindding, uint32_t count){
 
 	VkWriteDescriptorSet ubo_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
 	//ubo_write.dstSet = destination_set;
 	ubo_write.dstBinding = destination_bindding;
 	ubo_write.dstArrayElement = 0;
 	ubo_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	ubo_write.descriptorCount = 1;
+	ubo_write.descriptorCount = count;
 	ubo_write.pBufferInfo = ubo->ubo_info;
 	ubo_write.pImageInfo = NULL; // Optional
 	ubo_write.pTexelBufferView = NULL; // Optional
@@ -883,14 +883,14 @@ VkWriteDescriptorSet LAV_WriteUniformBuffer(LAV_Context *ctx, LAV_UniformBuffer 
 	return ubo_write;
 }
 
-VkWriteDescriptorSet LAV_WriteCombinedImageSampler(LAV_Context *ctx, LAV_Texture *tex, uint32_t destination_bindding){
+VkWriteDescriptorSet LAV_WriteCombinedImageSampler(LAV_Context *ctx, LAV_Texture *tex, uint32_t destination_bindding, uint32_t count){
 
 	VkWriteDescriptorSet image_write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
 	//image_write.dstSet = destination_set;
 	image_write.dstBinding = destination_bindding;
 	image_write.dstArrayElement = 0;
 	image_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	image_write.descriptorCount = 1;
+	image_write.descriptorCount = count;
 	image_write.pImageInfo = tex->image_info;
 
 	return image_write;
